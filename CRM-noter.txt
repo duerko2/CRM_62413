@@ -1,0 +1,30 @@
+## Her kan vi skrive idéer til projektet og noter fra møder osv.
+
+
+
+Overall idé:
+    CRM projekt. Web baseret app. 
+
+
+Kravliste:
+    1. 
+
+
+Tech:
+    web app:
+    - ASP.net MVC ? 
+    - Blazor (det nye)
+
+    test:
+    - xunit
+
+    database:
+    - slq
+    - 
+
+Arkitekturvalg:
+    -
+
+
+Design patterns:
+    -
