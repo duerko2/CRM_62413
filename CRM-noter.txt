@@ -2,12 +2,45 @@
 
 
 
-Overall idé:
-    CRM projekt. Web baseret app. 
+Overall idé: 
+    B2B CRM projekt. Web baseret app. 
+
+Taxonomy:
+    - 
+    - Agent: 
+    - Customer: company or person able to place orders, associated with an agent
+    - Lead: potential customer
+    - Order:
+    - Order item: 
+    - Service: is an order item with a (time span, monthly cost...)
+    - Product: is an order item with a price point and delivery time
+    - Reminder: 
+    - Invoice: 
+    - Quote: An offer made by an agent to a lead or customer
+    - Comment: Misc. information written by an agent on a lead or customer. 
+    - Portfolio: Set of customers and leads belonging to an agent
+
+
+
+1. sales dept identifies leads
+2. agent takes contact to lead
+...
+3. agent converts lead into customer
+4. customer places order th
+
 
 
 Kravliste:
-    1. 
+    6. - A company can create a company Account and register agents - 
+    1. Agent can log in
+    2. Agent can create lead
+    3. Agent can convert lead to customer
+    4. Agent can place an order for a customer
+    5. Agent can create comments on customers
+    6. **Agent can configure reminders (recurring or one time)
+    7. Agent can get an overview of both own portfolio and all portfolio on the company profile
+    8. Emails to customers (kampagne, offers, launches, follow up)
+    9. Overview of customers, filtering, searchable. -> click opens up customer page with info and history.
 
 
 Tech:
@@ -17,9 +50,10 @@ Tech:
 
     test:
     - xunit
+    - ui automation test
 
     database:
-    - slq
+    - sql
     - 
 
 Arkitekturvalg:
