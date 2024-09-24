@@ -1,0 +1,17 @@
+https://www.sciencedirect.com/science/article/pii/S0019850121001425?casa_token=-KgjLDYMQLoAAAAA:QWzs4pdB8wAvSNw39JXR3v6BPT6D8tlT7K8aGIoq3aX8ahdtFz1Kpw_l8htVyBKRFH4cK4sDjjw#bb0040
+
+AI-CRM - Instead of legacy CRM systems, a AI-CRM system makes decisions autonomously. 
+" AI-CRM leverages intelligent systems to automate the B2B relationship activities where the decision can be taken automatically without any human intervention."
+
+Conclusion:
+"This study integrated institutional theory and the RBV and developed a model showing how successful implementation of AI-CRM in B2B relationship management could impact organizations' performance and ultimately their competitive advantage"
+
+Monday.com/crm
+Existing CRM platform / Competitor.
+Features shown on front page (assumed to be some of the most important) 
+1. Email integration
+2. Deal stages - lead, proposal, negotiation, contract sent, closed
+3. Sales funnel overview
+4. Goals vs achieved
+5. Task generation (AI powered)
+6. Reminders
