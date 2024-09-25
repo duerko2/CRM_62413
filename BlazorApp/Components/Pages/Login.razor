@@ -12,7 +12,14 @@
     <InputText @bind-Value="loginModel.Password" type="password" placeholder="Password" />
     
     <button type="submit">Login</button>
+
 </EditForm>
+<p>
+    <button @onclick="HandleLogout">
+        Logout
+    </button>
+</p>
+
 
 @code {
     private LoginModel loginModel = new();
@@ -32,6 +39,16 @@
         {
             // Display error message
         }
+    }
+
+    private async Task HandleLogout()
+    {
+        Console.Write("HELLO");
+        if (AuthStateProvider is CustomAuthStateProvider customAuthProvider)
+            {
+                await customAuthProvider.Logout();
+                Navigation.NavigateTo("/");
+            }
     }
 
     public class LoginModel
