@@ -1,0 +1,42 @@
+@using BlazorApp.Services
+@using Microsoft.AspNetCore.Components.Forms
+@page "/login"
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    
+    <InputText @bind-Value="loginModel.Username" placeholder="Username" />
+    <InputText @bind-Value="loginModel.Password" type="password" placeholder="Password" />
+    
+    <button type="submit">Login</button>
+</EditForm>
+
+@code {
+    private LoginModel loginModel = new();
+
+    private async Task HandleLogin()
+    {
+        // For demo purposes, password is hardcoded.
+        if (loginModel.Username == "testuser" && loginModel.Password == "password")
+        {
+            if (AuthStateProvider is CustomAuthStateProvider customAuthProvider)
+            {
+                await customAuthProvider.Login(loginModel.Username);
+                Navigation.NavigateTo("/");
+            }
+        }  
+        else
+        {
+            // Display error message
+        }
+    }
+
+    public class LoginModel
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
+}
