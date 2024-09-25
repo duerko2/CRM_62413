@@ -11,9 +11,9 @@ Taxonomy:
     - Customer: company or person able to place orders, associated with an agent
     - Lead: potential customer
     - Order:
-    - Order item: 
-    - Service: is an order item with a (time span, monthly cost...)
-    - Product: is an order item with a price point and delivery time
+    - Product: 
+    - Service: is an product with a (time span, monthly cost...)
+    - Good: is an product with a price point and delivery time
     - Reminder: 
     - Invoice: 
     - Quote: An offer made by an agent to a lead or customer
