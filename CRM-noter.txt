@@ -42,6 +42,7 @@ Kravliste:
     8. Emails to customers (kampagne, offers, launches, follow up)
     9. Overview of customers, filtering, searchable. -> click opens up customer page with info and history.
 
+    Link til uddybet kravliste: https://docs.google.com/document/d/1vNhHiQFyrd9Pcs7wTobzLPsFPiPJvqfD6D0V0NKewKc/edit?usp=sharing
 
 Tech:
     web app:
