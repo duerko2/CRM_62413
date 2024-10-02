@@ -1,0 +1,53 @@
+﻿@page "/contact"
+@using BlazorApp.Models
+@using BlazorApp.Services
+@inject ContactService contactService
+
+<h1>Contact Details</h1>
+
+@if (contact != null)
+{
+    <div>
+        <h3>@contact.Name</h3>
+        <p><strong>Emails:</strong></p>
+        <ul>
+            @foreach (var email in contact.Emails)
+            {
+                <li>@email</li>
+            }
+        </ul>
+
+        <p><strong>Phone Numbers:</strong></p>
+        <ul>
+            @foreach (var phone in contact.PhoneNumbers)
+            {
+                <li>@phone</li>
+            }
+        </ul>
+
+        <p><strong>Related Persons:</strong></p>
+        <ul>
+            @foreach (var person in contact.RelatedPersons)
+            {
+                <li>@person</li>
+            }
+        </ul>
+
+        <p><strong>Address:</strong> @contact.Address</p>
+        <p><strong>Company:</strong> @contact.Company</p>
+        <p><strong>Notes:</strong> @contact.Notes</p>
+    </div>
+}
+else
+{
+    <p>Loading contact information...</p>
+}
+
+@code {
+    private Contact contact;
+
+    protected override void OnInitialized()
+    {
+        contact = contactService.GetContact();
+    }
+}

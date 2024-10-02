@@ -18,6 +18,8 @@ internal class Program
 
         builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
         builder.Services.AddAuthorizationCore();
+        builder.Services.AddScoped<ContactService>();
+
 
 
         var app = builder.Build();
