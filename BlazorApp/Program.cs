@@ -1,8 +1,8 @@
 using BlazorApp.Components;
-using Microsoft.AspNetCore.Components.Authorization;
 using BlazorApp.Services;
 using Blazored.LocalStorage;
 
+using Microsoft.AspNetCore.Components.Authorization;
 
 internal class Program
 {
@@ -19,6 +19,9 @@ internal class Program
         builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
         builder.Services.AddAuthorizationCore();
         builder.Services.AddScoped<ContactService>();
+        builder.Services.AddScoped<SideMenuService>();
+        builder.Services.AddScoped<BlazorApp.Services.CampaignService>();
+
 
 
 

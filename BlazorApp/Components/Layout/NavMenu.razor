@@ -1,4 +1,7 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using BlazorApp.Services
+@inject SideMenuService MenuService
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">BlazorApp</a>
     </div>
@@ -8,42 +11,83 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
+
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                <span class="bi bi-house-door-fill nav-menu-icon" aria-hidden="true"></span> Home
             </NavLink>
         </div>
 
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="login">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Login
+                <span class="bi bi-plus-square-fill nav-menu-icon" aria-hidden="true"></span> Login
             </NavLink>
         </div>
 
+        <!-- Contacts Menu -->
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
+            <NavLink class="nav-link" @onclick="MenuService.ToggleContactsMenu" href="/contact">
+                <span class="bi bi-people-fill nav-menu-icon" aria-hidden="true"></span> Contacts
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
+        @if (MenuService.IsContactsExpanded)
+        {
+            <ul class="sub-menu">
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="leads">
+                        <span class="bi bi-person-plus-fill nav-menu-icon" aria-hidden="true"></span> Leads
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="customers">
+                        <span class="bi bi-person-check-fill nav-menu-icon" aria-hidden="true"></span> Customers
+                    </NavLink>
+                </li>
+            </ul>
+        }
 
         <div class="nav-item px-3">
-        <NavLink class="nav-link" href="/Test">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Test page
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-        <NavLink class="nav-link" href="/contact">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Contact
+            <NavLink class="nav-link" href="/campaign">
+                <span class="bi bi-bar-chart-fill nav-menu-icon" aria-hidden="true"></span> Campaigns
             </NavLink>
         </div>
 
     </nav>
-</div>kli
+</div>
 
+<style>
+    .sub-menu {
+        padding-left: 20px; /* Reduce indentation */
+        margin-top: -40px; /* Remove extra margin between parent and submenu */
+        margin-bottom: -20px; /* Remove extra margin below submenus */
+        list-style-type: none; /* Remove bullet points (optional) */
+    }
+
+    /* Adjust space between parent and submenu items */
+    .nav-item {
+        margin-bottom: 0px; /* Reduce space between main menu items */
+    }
+
+        .nav-item .nav-link {
+            padding: 5px 0; /* Standard padding for parent menu items */
+        }
+
+    /* Less padding for sub-menu links */
+    .sub-menu .nav-item {
+        margin-bottom: -20px; /* Slight space between submenu items */
+    }
+
+        .sub-menu .nav-item .nav-link {
+            padding: 3px 0; /* Less padding for submenu items */
+            margin: 0; /* Ensure no extra margin for submenu items */
+        }
+
+    .nav-menu-icon {
+        vertical-align: middle;
+        margin-right: 5px; /* Adds some space between the icon and text */
+        margin-left: 5px; /* Adds some space between the icon and text */
+        font-size: 1.4em; /* Adjust the icon size to be proportionate */
+        margin-top: -25px; /* Removes some space to get the icon in line with the menu item */
+    }
+</style>

@@ -1,0 +1,236 @@
+﻿@page "/campaign"
+@using BlazorApp.Models
+@using BlazorApp.Services
+@inject BlazorApp.Services.CampaignService CampaignService
+
+<!-- Main container for the campaign page content -->
+<div class="container">
+    <!-- Display campaign and contact information -->
+    <h1>@campaign.CampaignName</h1>
+    <h4>@campaign.ContactName</h4>
+
+    <!-- Centered Pipeline Status Heading -->
+    <div class="text-center">
+        <h5 style="font-size: 24px;">Pipeline Status</h5> <!-- Heading for the pipeline status section -->
+    </div>
+
+    <!-- Pipeline status buttons displayed as a chevron flow -->
+    <div class="d-flex justify-content-center pipeline-status">
+        @foreach (var stage in pipelineStages)
+        {
+            <!-- Chevron-shaped buttons representing each pipeline stage -->
+            <button class="@GetButtonClass(stage) chevron-button" @onclick="() => ToggleStage(stage)">
+                @stage <!-- Display the stage name inside the button -->
+            </button>
+        }
+    </div>
+
+    <!-- Section for displaying tasks and latest quote/order/invoice side by side -->
+    <div class="d-flex justify-content-center">
+        <!-- Open tasks column -->
+        <div class="col-md-4">
+            <h5>Open tasks</h5>
+            <div class="scrollable-tasks">
+                <ul class="task-list">
+                    @foreach (var task in tasks) 
+                    {
+                        <li>
+                            <div class="task-item">
+                                <div class="task-item-content">
+                                    <!-- Display task description and dates -->
+                                    <p>@task.Description</p>
+                                    <p>Created: @task.CreatedDate</p>
+                                    <p>Deadline: @task.Deadline</p>
+                                </div>
+                                <!-- Toggleable "Complete" button for each task -->
+                                <button class="@GetButtonClassForTask(task)" @onclick="() => ToggleTaskComplete(task)">
+                                    Complete
+                                </button>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <!-- Latest (quote, order, invoice) column -->
+        <div class="col-md-8">
+            <h5>Latest (quote, order, invoice)</h5>
+            <div class="latest-quote">
+                <p>No latest quote, order, or invoice available.</p> <!-- Placeholder for future data -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private CampaignModel campaign;  // Campaign details (name, contact)
+    private List<string> pipelineStages;  // List of stages in the pipeline
+    private List<TaskModel> tasks;  // List of tasks related to the campaign
+
+    // Track the active/inactive state of pipeline stages
+    private Dictionary<string, bool> stageStates = new Dictionary<string, bool>();
+
+    // Track the completion status of each task
+    private Dictionary<TaskModel, bool> taskCompletionStates = new Dictionary<TaskModel, bool>();
+
+    // Initialize campaign data and set default states for pipeline and tasks
+    protected override void OnInitialized()
+    {
+        campaign = CampaignService.GetCampaignData();  // Get campaign data from the service
+        pipelineStages = campaign.PipelineStages;  // Fetch pipeline stages from the campaign data
+        tasks = campaign.Tasks;  // Fetch tasks associated with the campaign
+
+        // Initialize all pipeline stages as inactive (not highlighted)
+        foreach (var stage in pipelineStages)
+        {
+            stageStates[stage] = false;
+        }
+
+        // Initialize all tasks as incomplete
+        foreach (var task in tasks)
+        {
+            taskCompletionStates[task] = false;
+        }
+    }
+
+    // Toggle the active state of a pipeline stage when clicked
+    private void ToggleStage(string stage)
+    {
+        stageStates[stage] = !stageStates[stage];  // Flip the active/inactive state of the clicked stage
+    }
+
+    // Return the button class based on the pipeline stage's active state
+    private string GetButtonClass(string stage)
+    {
+        return stageStates[stage] ? "btn btn-primary active" : "btn btn-outline-secondary";
+    }
+
+    // Toggle the completion state of a task when "Complete" is clicked
+    private void ToggleTaskComplete(TaskModel task)
+    {
+        taskCompletionStates[task] = !taskCompletionStates[task];  // Flip the complete/incomplete state of the clicked task
+    }
+
+    // Return the button class based on the task's completion status
+    private string GetButtonClassForTask(TaskModel task)
+    {
+        return taskCompletionStates[task] ? "btn btn-primary active" : "btn btn-outline-secondary";
+    }
+}
+
+<style>
+    /* General container margin */
+    .container {
+        margin: 20px;
+    }
+
+    /* Styling for the campaign and contact headings */
+    h1 {
+        font-size: 2em;
+        margin-bottom: 10px;
+    }
+
+    h4 {
+        font-size: 1.5em;
+        margin-bottom: 30px;
+    }
+
+    /* Pipeline status button container and spacing */
+    .pipeline-status {
+        display: flex;
+        justify-content: center;
+        gap: 10px; /* Space between the pipeline buttons */
+        margin-bottom: 20px;
+    }
+
+    /* Align text to center */
+    .text-center {
+        text-align: center;
+    }
+
+    /* Scrollable task list container */
+    .scrollable-tasks {
+        border: 2px solid #ddd; /* Border around the task list */
+        height: 300px; /* Fixed height for scrollable area */
+        padding: 10px;
+        overflow-y: scroll; /* Scrollable content if overflow */
+    }
+
+    /* Styling for individual task items */
+    .task-item {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 150px;
+    }
+
+    /* Task item content */
+    .task-item-content {
+        flex-grow: 1;
+    }
+
+    /* Remove margin from paragraphs inside task items */
+    .task-item p {
+        margin: 0;
+    }
+
+    /* Align the "Complete" button at the bottom right of the task item */
+    .task-item button {
+        align-self: flex-end;
+        margin-top: 10px;
+    }
+
+    /* Remove bullet points from the task list */
+    ul.task-list {
+        list-style-type: none;
+        padding-left: 0;
+    }
+
+    /* Styling for the latest quote/order/invoice box */
+    .latest-quote {
+        border: 1px solid #ddd;
+        padding: 20px;
+        height: 150px;
+        background-color: #f4f4f4;
+    }
+
+    /* Chevron-shaped buttons for pipeline stages */
+    .chevron-button {
+        clip-path: polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%, 10% 50%);
+        padding: 10px 20px;
+        background-color: #ddd;
+        border: none;
+        color: black;
+        margin-right: 5px;
+    }
+
+        /* Hover effect for chevron buttons */
+        .chevron-button:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+    /* Outline style for buttons */
+    .btn-outline-secondary {
+        color: black;
+        border-color: #ddd;
+    }
+
+    /* Active button style (blue background) */
+    .btn-primary.active {
+        background-color: blue;
+        color: white;
+    }
+
+    /* Optional column width styling */
+    .col-md-4, .col-md-8 {
+        max-width: 500px;
+        margin-right: 20px;
+    }
+</style>
