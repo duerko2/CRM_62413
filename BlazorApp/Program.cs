@@ -1,6 +1,9 @@
 using BlazorApp.Components;
+using BlazorApp.Persistence;
+using Microsoft.AspNetCore.Components.Authorization;
 using BlazorApp.Services;
 using Blazored.LocalStorage;
+using Microsoft.EntityFrameworkCore;
 
 using Microsoft.AspNetCore.Components.Authorization;
 
@@ -22,10 +25,17 @@ internal class Program
         builder.Services.AddScoped<SideMenuService>();
         builder.Services.AddScoped<BlazorApp.Services.CampaignService>();
 
+        
+        
+        builder.Services.AddDbContext<CrmDbContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("Default Connection")));
+        
 
 
 
         var app = builder.Build();
+        
+        Db.Configure(app.Services);
 
         // Configure the HTTP request pipeline.
         if (!app.Environment.IsDevelopment())
