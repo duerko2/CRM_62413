@@ -5,8 +5,6 @@ using BlazorApp.Services;
 using Blazored.LocalStorage;
 using Microsoft.EntityFrameworkCore;
 
-using Microsoft.AspNetCore.Components.Authorization;
-
 internal class Program
 {
     private static void Main(string[] args)
@@ -18,6 +16,10 @@ internal class Program
 
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
+        
+        builder.Services.AddDbContext<CrmDbContext>(options =>
+            options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("Default Connection")));
+
 
         builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
         builder.Services.AddAuthorizationCore();
@@ -27,9 +29,7 @@ internal class Program
 
         
         
-        builder.Services.AddDbContext<CrmDbContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("Default Connection")));
-        
+
 
 
 

@@ -5,31 +5,33 @@
 
 <h1>Contact Details</h1>
 
+<ListViewComponent contacList></ListViewComponent>
+
 @if (contact != null)
 {
     <div>
         <h3>@contact.Name</h3>
         <p><strong>Emails:</strong></p>
         <ul>
-            @foreach (var email in contact.Emails)
+            @foreach (var email in contact.Persons)
             {
-                <li>@email</li>
+                <li>@email.Email</li>
             }
         </ul>
 
         <p><strong>Phone Numbers:</strong></p>
         <ul>
-            @foreach (var phone in contact.PhoneNumbers)
+            @foreach (var phone in contact.Persons)
             {
-                <li>@phone</li>
+                <li>@phone.Phone</li>
             }
         </ul>
 
         <p><strong>Related Persons:</strong></p>
         <ul>
-            @foreach (var person in contact.RelatedPersons)
+            @foreach (var person in contact.Persons)
             {
-                <li>@person</li>
+                <li>@person.Name</li>
             }
         </ul>
 

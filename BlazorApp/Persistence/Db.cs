@@ -11,6 +11,6 @@ public static class Db
 
     public static CrmDbContext getContext()
     {
-        return _serviceProvider.GetRequiredService<CrmDbContext>();
+        return _serviceProvider.GetService<CrmDbContext>();
     }
 }
