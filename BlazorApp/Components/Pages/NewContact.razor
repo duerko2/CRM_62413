@@ -1,0 +1,125 @@
+@using BlazorApp.Models
+@page "/newcontact"
+
+<h3 class="mb-4">Add Contact</h3>
+
+<EditForm Model="newContactModel" OnValidSubmit="Submit">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="alert alert-danger" />
+
+    <!-- Contact Information Section -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="contactName">Contact Name</label>
+                <InputText id="contactName" @bind-Value="newContactModel.Contact.Name" class="form-control" placeholder="Name" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="contactCompany">Company</label>
+                <InputText id="contactCompany" @bind-Value="newContactModel.Contact.Company" class="form-control" placeholder="Company" />
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="contactAddress">Address</label>
+                <InputText id="contactAddress" @bind-Value="newContactModel.Contact.Address" class="form-control" placeholder="Address" />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="contactVAT">VAT Number</label>
+                <InputText id="contactVAT" @bind-Value="newContactModel.Contact.VAT" class="form-control" placeholder="VAT" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Person Information Section -->
+    <h5 class="mb-3">Add Person Details</h5>
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="personName">Person Name</label>
+                <InputText id="personName" @bind-Value="newContactModel.Person.Name" class="form-control" placeholder="Enter name" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="personPhone">Phone Number</label>
+                <InputText id="personPhone" @bind-Value="newContactModel.Person.Phone" class="form-control" placeholder="Enter phone" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="personEmail">Email Address</label>
+                <InputText id="personEmail" @bind-Value="newContactModel.Person.Email" class="form-control" placeholder="Enter email" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary" @onclick="AddPerson">Add Person</button>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</EditForm>
+
+    
+
+
+
+@code {
+    NewContactModel newContactModel = new NewContactModel();
+    
+    private void AddPerson()
+    {
+        var person = newContactModel.Person;
+        var contact = newContactModel.Contact;
+        
+        //  Validate all fields
+        if(person.Name == null || person.Email == null || person.Phone == null)
+        {
+            // display error
+            // something here
+            
+            return;
+        }
+        contact.Persons.Add(person);
+        person = new Person();
+    }
+    private void Submit()
+    {
+        var person = newContactModel.Person;
+        var contact = newContactModel.Contact;
+        
+        // Validate all fields
+        if(contact.Name == null || contact.Address == null)
+        {
+            // display error
+            return;
+        }
+        // Check the Person form
+        AddPerson();
+        
+        //ContactService.SaveContact(contact);
+        
+        // Clear the form
+        contact = new Contact();
+        person = new Person();
+    }
+    
+    private class NewContactModel
+    {
+        public NewContactModel()
+        {
+            Contact = new Contact();
+            Person = new Person();
+        }
+        public Contact Contact { get; set; }
+        public Person Person { get; set; }
+    }
+}

@@ -2,8 +2,7 @@
 using BlazorApp.Models;
 using BlazorApp.Persistence;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
+
 
 namespace BlazorApp.Services
 {        
@@ -51,6 +50,28 @@ namespace BlazorApp.Services
                 Company = "Elgiganten A/S",
                 Notes = "VIP client, prefers email communication."
             };
+        }
+        public void SaveContact(Contact contact)
+        {
+            var user = _authenticationStateProvider.GetAuthenticationStateAsync().Result.User;
+            
+            // 
+            Persistence.Entities.Contact newContact = new Persistence.Entities.Contact
+            {
+                Name = contact.Name,
+                Address = contact.Address,
+                UserId = 1,
+            };
+            _db.Contacts.Add(newContact);
+            _db.SaveChanges();
+            _db.Persons.AddRange(contact.Persons.Select(p => new Persistence.Entities.Person
+            {
+                Name = p.Name, 
+                Email = p.Email, 
+                PhoneNumber = p.Phone, 
+                ContactId = newContact.Id
+            }));
+            _db.SaveChanges();
         }
     }
 }

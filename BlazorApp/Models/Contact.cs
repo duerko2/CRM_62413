@@ -8,5 +8,6 @@
         public string Address { get; set; }
         public string Company { get; set; }
         public string Notes { get; set; }
+        public string VAT { get; set; }
     }
 }
