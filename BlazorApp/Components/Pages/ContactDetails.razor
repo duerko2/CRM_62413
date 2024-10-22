@@ -1,0 +1,309 @@
+﻿@page "/contacts/{Id:int}"
+@using BlazorApp.Models
+@inject BlazorApp.Services.ContactService ContactService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Contact Detail</PageTitle>
+
+<button class="btn btn-link" @onclick="GoBack" style="font-size:24px;">
+    &#8592; Back
+</button>
+
+<div class="container-fluid">
+    <!-- Top Row: Name and ID -->
+    <div class="row mb-3">
+        <div class="col-md-8">
+            <h2>@contact.Name (ID: @contact.Id)</h2>
+        </div>
+    </div>
+    <!-- Main Content Row -->
+    <div class="row">
+        <!-- Left Column (Activity Timeline) -->
+        <div class="col-md-3">
+            <!-- Activity Timeline Section -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    Activity Timeline
+                </div>
+                <div class="card-body">
+                    @if (contact.Activities != null && contact.Activities.Any())
+                    {
+                        <ul class="timeline">
+                            @foreach (var activity in contact.Activities.OrderByDescending(a => a.Date))
+                            {
+                                <li>
+                                    <span class="timeline-date">@activity.Date.ToString("dd/MM/yyyy")</span>
+                                    <div class="timeline-content">
+                                        @activity.Description
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>No activities available.</p>
+                    }
+                </div>
+            </div>
+        </div>
+        <!-- Middle Column -->
+        <div class="col-md-6">
+            <!-- Active Pipelines Section -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    Active Pipelines
+                </div>
+                <div class="card-body">
+                    @if (contact.Campaigns != null && contact.Campaigns.Any())
+                    {
+                        <ul class="list-group">
+                            @foreach (var campaign in contact.Campaigns)
+                            {
+                                <li class="list-group-item">
+                                    @campaign.Name
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>No active pipelines.</p>
+                    }
+                </div>
+            </div>
+            <!-- Add Comment Section -->
+            <div class="card">
+                <div class="card-header">
+                    Add Comment
+                </div>
+                <div class="card-body">
+                    <textarea class="form-control" @bind="newCommentText" rows="3"></textarea>
+                </div>
+                <div class="card-footer text-right">
+                    <button class="btn btn-primary" @onclick="AddComment">Add Comment</button>
+                </div>
+            </div>
+            <!-- Display Latest Comment -->
+            @if (contact.Comments != null && contact.Comments.Any())
+            {
+                <div class="mt-3">
+                    <h5>Latest Comment:</h5>
+                    <div class="card">
+                        <div class="card-body">
+                            <p>@contact.Comments.First().Text</p>
+                            <small class="text-muted">@contact.Comments.First().Date.ToString("g")</small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <!-- Right Column: Info Section -->
+        <div class="col-md-3">
+            <!-- Existing Info Section -->
+            <div class="card">
+                <div class="card-header">
+                    Info
+                </div>
+                <div class="card-body">
+                    <!-- Editable Fields -->
+                    <div class="form-group">
+                        <label>Company Name</label>
+                        <input class="form-control" @bind="contact.Company" />
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <input class="form-control" @bind="contact.Address" />
+                    </div>
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select class="form-control" @bind="contact.Type">
+                            <option value="Lead">Lead</option>
+                            <option value="Customer">Customer</option>
+                        </select>
+                    </div>
+                    <!-- Contact Persons -->
+                    <div class="form-group">
+                        <label>Contact Persons</label>
+                        @foreach (var person in contact.Persons)
+                        {
+                            <div class="card mb-2">
+                                <div class="card-body">
+                                    <div class="form-group">
+                                        <label>Name</label>
+                                        <input class="form-control" @bind="person.Name" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Email</label>
+                                        <input class="form-control" @bind="person.Email" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Phone</label>
+                                        <input class="form-control" @bind="person.Phone" />
+                                    </div>
+                                    <button class="btn btn-danger btn-sm" @onclick="() => RemoveContactPerson(person)">Remove</button>
+                                </div>
+                            </div>
+                        }
+                        <button class="btn btn-secondary" @onclick="AddContactPerson">Add Contact Person</button>
+                    </div>
+                </div>
+                <div class="card-footer text-right">
+                    <button class="btn btn-primary" @onclick="SaveContact">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Timeline Styles */
+    .timeline {
+        list-style: none;
+        padding-left: 0;
+        position: relative;
+    }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+
+        .timeline li {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 20px;
+        }
+
+    .timeline-date {
+        font-weight: bold;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    .timeline-content {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+    }
+
+    .timeline li::before {
+        content: '';
+        position: absolute;
+        left: 10px;
+        width: 10px;
+        height: 10px;
+        background: #007bff;
+        border-radius: 50%;
+        top: 0;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Contact contact;
+    private string newCommentText;
+    private string previousType;
+
+    protected override void OnInitialized()
+    {
+        // Fetch the contact data based on the Id parameter
+        contact = ContactService.GetContactById(Id);
+
+        if (contact == null)
+        {
+            // Handle contact not found, navigate back to contacts list
+            NavigationManager.NavigateTo("/contacts");
+            return;
+        }
+
+        // Ensure collections are initialized
+        if (contact.Persons == null)
+        {
+            contact.Persons = new List<Person>();
+        }
+        if (contact.Campaigns == null)
+        {
+            contact.Campaigns = new List<Campaign>();
+        }
+        if (contact.Comments == null)
+        {
+            contact.Comments = new List<Comment>();
+        }
+        if (contact.Activities == null)
+        {
+            contact.Activities = new List<Activity>();
+        }
+
+        // Store the initial type
+        previousType = contact.Type;
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/contacts");
+    }
+
+    private void AddContactPerson()
+    {
+        contact.Persons.Add(new Person());
+    }
+
+    private void RemoveContactPerson(Person person)
+    {
+        contact.Persons.Remove(person);
+    }
+
+    private void SaveContact()
+    {
+        // Check if the contact type has changed
+        if (contact.Type != previousType)
+        {
+            var activity = new Activity
+                {
+                    Date = DateTime.Now,
+                    Description = $"Converted from {previousType} to {contact.Type}"
+                };
+            contact.Activities.Insert(0, activity);
+
+            // Update the previous type
+            previousType = contact.Type;
+        }
+
+        // Save the updated contact
+        ContactService.UpdateContact(contact);
+        // Optionally display a success message
+    }
+
+    private void AddComment()
+    {
+        if (!string.IsNullOrWhiteSpace(newCommentText))
+        {
+            var comment = new Comment
+                {
+                    Date = DateTime.Now,
+                    Text = newCommentText
+                };
+            contact.Comments.Insert(0, comment); // Add to the beginning
+            newCommentText = string.Empty;
+
+            // Save the updated contact
+            ContactService.UpdateContact(contact);
+
+            // Add the comment to the activity timeline
+            var activity = new Activity
+                {
+                    Date = comment.Date,
+                    Description = $"Comment added: '{comment.Text}'"
+                };
+            contact.Activities.Insert(0, activity);
+        }
+    }
+}

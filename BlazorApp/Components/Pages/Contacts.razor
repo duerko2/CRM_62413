@@ -1,53 +1,116 @@
-﻿@page "/contact"
+﻿@page "/contacts"
 @using BlazorApp.Models
-@using BlazorApp.Services
-@inject ContactService contactService
+@inject BlazorApp.Services.ContactService ContactService
 
-<h1>Contact Details</h1>
+<PageTitle>Contacts</PageTitle>
 
-@if (contact != null)
+<h1>Contacts</h1>
+
+@if (contacts == null || !contacts.Any())
 {
-    <div>
-        <h3>@contact.Name</h3>
-        <p><strong>Emails:</strong></p>
-        <ul>
-            @foreach (var email in contact.Persons)
-            {
-                <li>@email.Email</li>
-            }
-        </ul>
-
-        <p><strong>Phone Numbers:</strong></p>
-        <ul>
-            @foreach (var phone in contact.Persons)
-            {
-                <li>@phone.Phone</li>
-            }
-        </ul>
-
-        <p><strong>Related Persons:</strong></p>
-        <ul>
-            @foreach (var person in contact.Persons)
-            {
-                <li>@person.Name</li>
-            }
-        </ul>
-
-        <p><strong>Address:</strong> @contact.Address</p>
-        <p><strong>Company:</strong> @contact.Company</p>
-        <p><strong>Notes:</strong> @contact.Notes</p>
-    </div>
+    <p>No contacts available.</p>
 }
 else
 {
-    <p>Loading contact information...</p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th @onclick="@(() => SortContacts(nameof(Contact.Name)))">
+                    Company Name @SortIndicator(nameof(Contact.Name))
+                </th>
+                <th @onclick="@(() => SortContacts(nameof(Contact.Type)))">
+                    Type @SortIndicator(nameof(Contact.Type))
+                </th>
+                <th @onclick="@(() => SortContacts(nameof(Contact.Id)))">
+                    ID @SortIndicator(nameof(Contact.Id))
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var contact in contacts)
+            {
+                <tr>
+                    <td>
+                        <NavLink href="@($"/contacts/{contact.Id}")">
+                            @contact.Name
+                        </NavLink>
+                    </td>
+                    <td>@contact.Type</td>
+                    <td>@contact.Id</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
 
+<style>
+    th {
+        cursor: pointer;
+        user-select: none;
+    }
+
+        th span {
+            margin-left: 5px;
+        }
+
+        th:hover {
+            text-decoration: underline;
+        }
+</style>
+
 @code {
-    private Contact contact;
+    private List<Contact> contacts;
+    private string currentSortColumn = nameof(Contact.Id);
+    private bool ascending = true;
 
     protected override void OnInitialized()
     {
-        contact = contactService.GetContact();
+        contacts = ContactService.GetContacts();
+        SortContacts(currentSortColumn);
+    }
+
+    private void SortContacts(string columnName)
+    {
+        if (currentSortColumn == columnName)
+        {
+            // Toggle sort order if the same column is clicked
+            ascending = !ascending;
+        }
+        else
+        {
+            // Sort new column ascending by default
+            currentSortColumn = columnName;
+            ascending = true;
+        }
+
+        // Use LINQ to sort the contacts
+        contacts = contacts.OrderBy(contact => GetSortValue(contact, currentSortColumn)).ToList();
+
+        if (!ascending)
+        {
+            contacts.Reverse();
+        }
+    }
+
+    private object GetSortValue(Contact contact, string columnName)
+    {
+        return columnName switch
+        {
+            nameof(Contact.Name) => contact.Name,
+            nameof(Contact.Type) => contact.Type,
+            nameof(Contact.Id) => contact.Id,
+            _ => contact.Id
+        };
+    }
+
+    private MarkupString SortIndicator(string columnName)
+    {
+        if (currentSortColumn != columnName)
+        {
+            return new MarkupString("");
+        }
+
+        var arrow = ascending ? "&#9650;" : "&#9660;"; // Up or down arrow
+        return new MarkupString($"<span>{arrow}</span>");
     }
 }

@@ -6,9 +6,9 @@ namespace BlazorApp.Services
     public class CampaignService
     {
         // Get campaign data (for now hardcoded, will be dynamic in the future)
-        public CampaignModel GetCampaignData()
+        public Campaign GetCampaignData()
         {
-            return new CampaignModel
+            return new Campaign
             {
                 CampaignName = "Campaign_X",
                 ContactName = "Contact_Y",
@@ -23,7 +23,7 @@ namespace BlazorApp.Services
         }
 
         // Set the active stage of the campaign
-        public void SetActiveStage(CampaignModel campaign, string stage)
+        public void SetActiveStage(Campaign campaign, string stage)
         {
             campaign.ActiveStage = stage; // Update the active stage in the model
         }
