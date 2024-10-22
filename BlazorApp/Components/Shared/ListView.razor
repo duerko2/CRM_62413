@@ -1,0 +1,33 @@
+﻿@typeparam TItem
+@using Microsoft.AspNetCore.Components
+
+<!-- Reusable List View Component -->
+<div class="list-view-container">
+    <!-- Display the title for the list, such as "Contacts", "Leads", etc. -->
+    <h3>@Title</h3>
+
+    @if (Items == null || !Items.Any())
+    {
+        <!-- Display this message if there are no items in the list -->
+        <p>No items available.</p>
+    }
+    else
+    {
+        <!-- Display a list of items with each item being rendered based on the RowTemplate -->
+        <ul class="list-group">
+            @foreach (var item in Items)
+            {
+                <li class="list-group-item">
+                    <!-- RowTemplate defines how each item is rendered -->
+                    @RowTemplate(item)
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; }   // Title for the list (e.g., "Contacts", "Leads", etc.)
+    [Parameter] public IEnumerable<TItem> Items { get; set; }   // The collection of items to display
+    [Parameter] public RenderFragment<TItem> RowTemplate { get; set; }   // Template to render each item
+}
