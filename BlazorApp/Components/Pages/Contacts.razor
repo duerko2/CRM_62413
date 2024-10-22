@@ -83,7 +83,7 @@ else
             ascending = true;
         }
 
-        // Use LINQ to sort the contacts
+        // LINQ to sort the contacts
         contacts = contacts.OrderBy(contact => GetSortValue(contact, currentSortColumn)).ToList();
 
         if (!ascending)

@@ -1,7 +1,7 @@
 @using BlazorApp.Models
 @using BlazorApp.Services
 @page "/newcontact"
-@inject ContactService ContactService
+@inject NewContactService NewContactService
 
 <h3 class="mb-4">Add Contact</h3>
 
@@ -106,7 +106,7 @@
         // Check the Person form
         AddPerson();
         
-        ContactService.SaveContact(contact);
+        NewContactService.SaveContact(contact);
         
         // Clear the form
         newContactModel.Contact = new Contact();
