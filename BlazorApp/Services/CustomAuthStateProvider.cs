@@ -22,6 +22,7 @@ namespace BlazorApp.Services
                 var username = GetUsernameAsync();
                 Console.Write(userId.Result);
                 Console.Write(username.Result);
+                
                 if (!userId.Result.HasValue)
                 {
                     return new AuthenticationState(_anonymous);
@@ -47,15 +48,32 @@ namespace BlazorApp.Services
 
         private async Task<int?> GetUserIdAsync()
         {
-            return 1;
-            return await _localStorage.GetItemAsync<int?>("id");
+            return 2;
+            var getUserIdTask = _localStorage.GetItemAsync<int>("uid").AsTask();
+
+            // Create a timeout task that completes after 2 seconds
+            var timeoutTask = Task.Delay(2000);
+
+            // Wait for either the user ID task to complete or the timeout to expire
+            var completedTask = await Task.WhenAny(getUserIdTask, timeoutTask);
+
+            // If the completed task is the user ID task, return its result; otherwise, return null for a timeout
+            if (completedTask == getUserIdTask)
+            {
+                return await getUserIdTask; // Successful completion
+            }
+            else
+            {
+                Console.WriteLine("Timeout occurred");
+                return 2;
+            }
         }
 
         public async Task Login(string username)
         {
             // Ensure the JS interop call happens after the component has rendered
             await _localStorage.SetItemAsync("username", username);
-            await _localStorage.SetItemAsync("id", 1);
+            await _localStorage.SetItemAsync<int>("uid", 2);
 
             var identity = new ClaimsIdentity(new[]
             {
@@ -71,7 +89,7 @@ namespace BlazorApp.Services
         public async Task Logout()
         {
             await _localStorage.RemoveItemAsync("username");
-            await _localStorage.RemoveItemAsync("id");
+            await _localStorage.RemoveItemAsync("uid");
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_anonymous)));
         }
 

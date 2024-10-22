@@ -51,16 +51,22 @@ namespace BlazorApp.Services
                 Notes = "VIP client, prefers email communication."
             };
         }
+        
+        /// <summary>
+        /// Idempotent method to save a contact
+        /// </summary>
+        /// <param name="contact"></param>
         public void SaveContact(Contact contact)
         {
             var user = _authenticationStateProvider.GetAuthenticationStateAsync().Result.User;
             
-            // 
+            Console.WriteLine();
+            
             Persistence.Entities.Contact newContact = new Persistence.Entities.Contact
             {
                 Name = contact.Name,
                 Address = contact.Address,
-                UserId = 1,
+                UserId = 2,
             };
             _db.Contacts.Add(newContact);
             _db.SaveChanges();

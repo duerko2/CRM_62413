@@ -1,13 +1,14 @@
 @using BlazorApp.Models
+@using BlazorApp.Services
 @page "/newcontact"
+@inject ContactService ContactService
 
 <h3 class="mb-4">Add Contact</h3>
 
 <EditForm Model="newContactModel" OnValidSubmit="Submit">
     <DataAnnotationsValidator />
     <ValidationSummary class="alert alert-danger" />
-
-    <!-- Contact Information Section -->
+    
     <div class="row mb-3">
         <div class="col-md-6">
             <div class="form-group">
@@ -89,7 +90,7 @@
             return;
         }
         contact.Persons.Add(person);
-        person = new Person();
+        newContactModel.Person = new Person();
     }
     private void Submit()
     {
@@ -105,11 +106,12 @@
         // Check the Person form
         AddPerson();
         
-        //ContactService.SaveContact(contact);
+        ContactService.SaveContact(contact);
         
         // Clear the form
-        contact = new Contact();
-        person = new Person();
+        newContactModel.Contact = new Contact();
+        newContactModel.Contact.Persons = new List<Person>();
+        newContactModel.Person = new Person();
     }
     
     private class NewContactModel
@@ -117,6 +119,7 @@
         public NewContactModel()
         {
             Contact = new Contact();
+            Contact.Persons = new List<Person>();
             Person = new Person();
         }
         public Contact Contact { get; set; }
