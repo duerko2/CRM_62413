@@ -1,6 +1,8 @@
 ﻿using System.Security.Claims;
+using BlazorApp.ModelMapping;
 using BlazorApp.Models;
 using BlazorApp.Persistence;
+using BlazorApp.Repository;
 using Microsoft.AspNetCore.Components.Authorization;
 
 
@@ -9,13 +11,37 @@ namespace BlazorApp.Services
     //For demonstration purposes, we'll change it to data from a database later
     public class NewContactService
     {
+        private readonly IContactRepository _contactRepository;
         private readonly CrmDbContext _db;
         private readonly AuthenticationStateProvider _authenticationStateProvider;
-        public NewContactService(CrmDbContext db, AuthenticationStateProvider authenticationStateProvider)
+        public NewContactService(IContactRepository contactRepository, CrmDbContext db, AuthenticationStateProvider authenticationStateProvider)
         {
+            _contactRepository = contactRepository;
             _db = db;
             _authenticationStateProvider = authenticationStateProvider;
         }
+        
+        /// <summary>
+        /// Retrieves the list of contacts.
+        /// </summary>
+        /// <returns>List of contacts.</returns>
+        public List<Contact> GetContacts()
+        {
+            var contacts = _contactRepository.GetContactsForUser(2);
+            return contacts.Select(ContactMapper.MapToModel).ToList();
+        }
+        
+        /// <summary>
+        /// Retrieves a contact by its ID.
+        /// </summary>
+        /// <param name="id">The ID of the contact.</param>
+        /// <returns>The contact with the specified ID, or null if not found.</returns>
+        public Contact GetContactById(int id)
+        {
+            var contact = _contactRepository.GetContact(id);
+            return ContactMapper.MapToModel(contact);
+        }
+        
         public Contact GetContact()
         {
             var user = _authenticationStateProvider.GetAuthenticationStateAsync().Result.User;
@@ -58,26 +84,16 @@ namespace BlazorApp.Services
         /// <param name="contact"></param>
         public void SaveContact(Contact contact)
         {
-            var user = _authenticationStateProvider.GetAuthenticationStateAsync().Result.User;
-
-            Console.WriteLine();
-
-            Persistence.Entities.Contact newContact = new Persistence.Entities.Contact
+            var contactEntity = ContactMapper.MapToEntity(contact);
+            
+            if(contactEntity.Id == default)
             {
-                Name = contact.Name,
-                Address = contact.Address,
-                UserId = 2,
-            };
-            _db.Contacts.Add(newContact);
-            _db.SaveChanges();
-            _db.Persons.AddRange(contact.Persons.Select(p => new Persistence.Entities.Person
+                _contactRepository.AddContact(contactEntity);
+            }
+            else
             {
-                Name = p.Name,
-                Email = p.Email,
-                PhoneNumber = p.Phone,
-                ContactId = newContact.Id
-            }));
-            _db.SaveChanges();
+                _contactRepository.UpdateContact(contactEntity);
+            }
         }
     }
 }

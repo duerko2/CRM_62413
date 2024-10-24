@@ -1,5 +1,6 @@
 using BlazorApp.Components;
 using BlazorApp.Persistence;
+using BlazorApp.Repository;
 using Microsoft.AspNetCore.Components.Authorization;
 using BlazorApp.Services;
 using Blazored.LocalStorage;
@@ -24,8 +25,12 @@ internal class Program
         builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
         builder.Services.AddAuthorizationCore();
         builder.Services.AddScoped<ContactService>();
+        builder.Services.AddScoped<NewContactService>();
         builder.Services.AddScoped<SideMenuService>();
         builder.Services.AddScoped<BlazorApp.Services.CampaignService>();
+        
+        
+        builder.Services.AddScoped<IContactRepository, ContactRepository>();
 
         
         
