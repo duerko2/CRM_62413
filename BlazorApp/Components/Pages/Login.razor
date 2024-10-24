@@ -1,7 +1,9 @@
 @using BlazorApp.Services
+@using Blazored.LocalStorage
 @page "/login"
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
+@inject ILocalStorageService LocalStorage
 
 <EditForm Model="loginModel" OnValidSubmit="HandleLogin">
     <DataAnnotationsValidator />
@@ -18,15 +20,17 @@
         Logout
     </button>
 </p>
+<p>@message</p>
 
 
 @code {
     private LoginModel loginModel = new();
+    private String message;
 
     private async Task HandleLogin()
     {
         // For demo purposes, password is hardcoded.
-        if (loginModel.Username == "testuser" && loginModel.Password == "password")
+        if (loginModel.Password == "password")
         {
             if (AuthStateProvider is CustomAuthStateProvider customAuthProvider)
             {
@@ -36,6 +40,7 @@
         }  
         else
         {
+            message = "Hint: password is 'password' for the demo";
             // Display error message
         }
     }

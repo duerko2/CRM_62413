@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 internal class Program
 {
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -58,6 +58,6 @@ internal class Program
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();
 
-        app.Run();
+        await app.RunAsync();
     }
 }

@@ -46,7 +46,7 @@ namespace BlazorApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Campaign");
+                    b.ToTable("Campaigns");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Company", b =>
@@ -63,7 +63,7 @@ namespace BlazorApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Company");
+                    b.ToTable("Companies");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Contact", b =>
@@ -142,7 +142,7 @@ namespace BlazorApp.Migrations
 
                     b.HasIndex("ContactId");
 
-                    b.ToTable("Pipeline");
+                    b.ToTable("Pipelines");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Task", b =>
@@ -172,7 +172,7 @@ namespace BlazorApp.Migrations
 
                     b.HasIndex("PipelineId");
 
-                    b.ToTable("Task");
+                    b.ToTable("Tasks");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.User", b =>
@@ -194,7 +194,7 @@ namespace BlazorApp.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("User");
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Contact", b =>

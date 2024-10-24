@@ -25,9 +25,9 @@ namespace BlazorApp.Services
         /// Retrieves the list of contacts.
         /// </summary>
         /// <returns>List of contacts.</returns>
-        public List<Contact> GetContacts()
+        public List<Contact> GetContacts(int userId)
         {
-            var contacts = _contactRepository.GetContactsForUser(2);
+            var contacts = _contactRepository.GetContactsForUser(userId);
             return contacts.Select(ContactMapper.MapToModel).ToList();
         }
         

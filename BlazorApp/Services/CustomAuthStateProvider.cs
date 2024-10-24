@@ -1,79 +1,87 @@
-using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.JSInterop;
 using System.Security.Claims;
 using BlazorApp.Persistence;
 
-namespace BlazorApp.Services
-{    public class CustomAuthStateProvider : AuthenticationStateProvider
+namespace BlazorApp.Services;
+
+public class CustomAuthStateProvider : AuthenticationStateProvider
+{
+    private readonly IJSRuntime _jsRuntime;
+    private readonly CrmDbContext _db;
+    private readonly ClaimsPrincipal _anonymous = new ClaimsPrincipal(new ClaimsIdentity());
+
+    public CustomAuthStateProvider(IJSRuntime jsRuntime, CrmDbContext dbContext)
     {
-        private readonly ILocalStorageService _localStorage;
-        private readonly ClaimsPrincipal _anonymous = new ClaimsPrincipal(new ClaimsIdentity());
+        _db = dbContext;
+        _jsRuntime = jsRuntime;
+    }
 
-        public CustomAuthStateProvider(ILocalStorageService localStorage)
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+    {
+        var userId = await GetUserIdAsync();
+        var username = await GetUsernameAsync();
+
+        if (!userId.HasValue)
         {
-            _localStorage = localStorage;
+            return new AuthenticationState(_anonymous);
         }
 
-        public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+        var identity = new ClaimsIdentity(new[]
         {
-            try
-            {
-                var userId = GetUserIdAsync();
-                var username = GetUsernameAsync();
-                Console.Write(userId.Result);
-                Console.Write(username.Result);
+            new Claim(ClaimTypes.Name, username),
+            new Claim(ClaimTypes.Role, "Administrator"),
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+        }, "Fake authentication");
+
+        var user = new ClaimsPrincipal(identity);
+        return new AuthenticationState(user);
+    }
+
+    private async Task<int?> GetUserIdAsync()
+    {
+        try
+        {
+            var id = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "uid");
+            var idInt = Int32.Parse(id);
+            return idInt;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Error fetching user ID: " + e.Message);
+            return null;
+        }
+    }
+
+    private async Task<string?> GetUsernameAsync()
+    {
+        try
+        {
+            return await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "username");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine("Error fetching username: " + e.Message);
+            return null;
+        }
+    }
+
+    public async Task Login(string username)
+    {
+        try
+        {
+            // VERY Simple authentication
+            var dbUser = _db.Users.SingleOrDefault(u => u.Name == username);
                 
-                if (!userId.Result.HasValue)
-                {
-                    return new AuthenticationState(_anonymous);
-                }
-
-                var identity = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.Name, username.Result),
-                    new Claim(ClaimTypes.Role, "Administrator"),
-                    new Claim(ClaimTypes.NameIdentifier, userId.Result.ToString())
-                }, "Fake authentication");
-
-                var user = new ClaimsPrincipal(identity);
-                return new AuthenticationState(user);
-            } 
-            catch (InvalidOperationException e) 
+            if (dbUser == null)
             {
-                Console.WriteLine("Invalid operation exception");
-                return new AuthenticationState(new ClaimsPrincipal());
+                throw new Exception("User not found");
             }
-            
-        }
-
-        private async Task<int?> GetUserIdAsync()
-        {
-            return 2;
-            var getUserIdTask = _localStorage.GetItemAsync<int>("uid").AsTask();
-
-            // Create a timeout task that completes after 2 seconds
-            var timeoutTask = Task.Delay(2000);
-
-            // Wait for either the user ID task to complete or the timeout to expire
-            var completedTask = await Task.WhenAny(getUserIdTask, timeoutTask);
-
-            // If the completed task is the user ID task, return its result; otherwise, return null for a timeout
-            if (completedTask == getUserIdTask)
-            {
-                return await getUserIdTask; // Successful completion
-            }
-            else
-            {
-                Console.WriteLine("Timeout occurred");
-                return 2;
-            }
-        }
-
-        public async Task Login(string username)
-        {
-            // Ensure the JS interop call happens after the component has rendered
-            await _localStorage.SetItemAsync("username", username);
-            await _localStorage.SetItemAsync<int>("uid", 2);
+                
+            // Authenticated! Stores the username and user ID in browser
+                
+            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "username", username);
+            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "uid", dbUser.Id);
 
             var identity = new ClaimsIdentity(new[]
             {
@@ -85,20 +93,23 @@ namespace BlazorApp.Services
             var user = new ClaimsPrincipal(identity);
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
         }
-
-        public async Task Logout()
+        catch (Exception e)
         {
-            await _localStorage.RemoveItemAsync("username");
-            await _localStorage.RemoveItemAsync("uid");
+            Console.WriteLine("Error during login: " + e.Message);
+        }
+    }
+
+    public async Task Logout()
+    {
+        try
+        {
+            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "username");
+            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "uid");
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_anonymous)));
         }
-
-        // Helper method to get username asynchronously to handle the interop properly
-        private async Task<string> GetUsernameAsync()
+        catch (Exception e)
         {
-            // This ensures the JS interop call is handled safely
-            return "username";
-            return await _localStorage.GetItemAsStringAsync("username");
+            Console.WriteLine("Error during logout: " + e.Message);
         }
     }
 }

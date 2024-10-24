@@ -1,6 +1,12 @@
 ﻿@page "/contacts"
+@using System.Security.Claims
 @using BlazorApp.Models
-@inject BlazorApp.Services.ContactService ContactService
+@using BlazorApp.Services
+@inject Services.ContactService ContactService
+@inject Services.NewContactService NewContactService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
+
 
 <PageTitle>Contacts</PageTitle>
 
@@ -18,9 +24,6 @@ else
                 <th @onclick="@(() => SortContacts(nameof(Contact.Name)))">
                     Company Name @SortIndicator(nameof(Contact.Name))
                 </th>
-                <th @onclick="@(() => SortContacts(nameof(Contact.Type)))">
-                    Type @SortIndicator(nameof(Contact.Type))
-                </th>
                 <th @onclick="@(() => SortContacts(nameof(Contact.Id)))">
                     ID @SortIndicator(nameof(Contact.Id))
                 </th>
@@ -35,7 +38,7 @@ else
                             @contact.Name
                         </NavLink>
                     </td>
-                    <td>@contact.Type</td>
+
                     <td>@contact.Id</td>
                 </tr>
             }
@@ -63,10 +66,19 @@ else
     private string currentSortColumn = nameof(Contact.Id);
     private bool ascending = true;
 
-    protected override void OnInitialized()
+    protected override async void OnInitialized()
     {
-        contacts = ContactService.GetContacts();
+        await LoadContacts();
+    }
+
+    private async Task LoadContacts()
+    {
+        var user = (await AuthStateProvider.GetAuthenticationStateAsync()).User;
+        var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        var userIdInt = int.Parse(userId);
+        contacts = NewContactService.GetContacts(userIdInt);
         SortContacts(currentSortColumn);
+        StateHasChanged();
     }
 
     private void SortContacts(string columnName)
