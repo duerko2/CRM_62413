@@ -6,8 +6,8 @@
 <!-- Main container for the campaign page content -->
 <div class="container">
     <!-- Display campaign and contact information -->
-    <h1>@campaign.CampaignName</h1>
-    <h4>@campaign.ContactName</h4>
+    <h1>@campaign.Name</h1>
+    <h4>@campaign.Name</h4>
 
     <!-- Centered Pipeline Status Heading -->
     <div class="text-center">
@@ -77,7 +77,7 @@
     // Initialize campaign data and set default states for pipeline and tasks
     protected override void OnInitialized()
     {
-        campaign = CampaignService.GetCampaignData();  // Get campaign data from the service
+        //campaign = CampaignService.GetCampaignData();  // Get campaign data from the service
         pipelineStages = campaign.PipelineStages;  // Fetch pipeline stages from the campaign data
         tasks = campaign.Tasks;  // Fetch tasks associated with the campaign
 

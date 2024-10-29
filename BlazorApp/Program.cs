@@ -28,8 +28,9 @@ internal class Program
         builder.Services.AddScoped<NewContactService>();
         builder.Services.AddScoped<SideMenuService>();
         builder.Services.AddScoped<BlazorApp.Services.CampaignService>();
-        
-        
+        builder.Services.AddSingleton<CampaignService>();
+
+
         builder.Services.AddScoped<IContactRepository, ContactRepository>();
 
         

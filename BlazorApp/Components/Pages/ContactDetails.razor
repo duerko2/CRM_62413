@@ -61,7 +61,9 @@
                             @foreach (var campaign in contact.Campaigns)
                             {
                                 <li class="list-group-item">
-                                    @campaign.Name
+                                    <a href="@($"/campaign/{campaign.Id}/contact/{contact.Id}")">
+                                        @campaign.Name
+                                    </a>
                                 </li>
                             }
                         </ul>
@@ -100,7 +102,7 @@
         </div>
         <!-- Right Column: Info Section -->
         <div class="col-md-3">
-            <!-- Existing Info Section -->
+            <!-- Info Section -->
             <div class="card">
                 <div class="card-header">
                     Info
