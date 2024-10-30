@@ -1,6 +1,9 @@
 ﻿@page "/contacts/{Id:int}"
 @using BlazorApp.Models
-@inject BlazorApp.Services.ContactService ContactService
+@using BlazorApp.Services
+@inject ContactService ContactService
+@inject PipelineService PipelineService
+@inject CampaignService CampaignService
 @inject NavigationManager NavigationManager
 
 <PageTitle>Contact Detail</PageTitle>
@@ -55,14 +58,15 @@
                     Active Pipelines
                 </div>
                 <div class="card-body">
-                    @if (contact.Campaigns != null && contact.Campaigns.Any())
+                    @if (contact.Pipelines != null && contact.Pipelines.Any())
                     {
                         <ul class="list-group">
-                            @foreach (var campaign in contact.Campaigns)
+                            @foreach (var pipeline in contact.Pipelines)
                             {
+                                var campaign = CampaignService.GetCampaignById(pipeline.CampaignId);
                                 <li class="list-group-item">
-                                    <a href="@($"/campaign/{campaign.Id}/contact/{contact.Id}")">
-                                        @campaign.Name
+                                    <a href="@($"/pipeline/{pipeline.Id}")">
+                                        @(campaign?.Name ?? "Unknown Campaign")
                                     </a>
                                 </li>
                             }
@@ -74,6 +78,7 @@
                     }
                 </div>
             </div>
+
             <!-- Add Comment Section -->
             <div class="card">
                 <div class="card-header">
@@ -231,9 +236,9 @@
         {
             contact.Persons = new List<Person>();
         }
-        if (contact.Campaigns == null)
+        if (contact.Pipelines == null)
         {
-            contact.Campaigns = new List<Campaign>();
+            contact.Pipelines = new List<Pipeline>();
         }
         if (contact.Comments == null)
         {
@@ -269,10 +274,10 @@
         if (contact.Type != previousType)
         {
             var activity = new Activity
-                {
-                    Date = DateTime.Now,
-                    Description = $"Converted from {previousType} to {contact.Type}"
-                };
+            {
+                Date = DateTime.Now,
+                Description = $"Converted from {previousType} to {contact.Type}"
+            };
             contact.Activities.Insert(0, activity);
 
             // Update the previous type
@@ -289,10 +294,10 @@
         if (!string.IsNullOrWhiteSpace(newCommentText))
         {
             var comment = new Comment
-                {
-                    Date = DateTime.Now,
-                    Text = newCommentText
-                };
+            {
+                Date = DateTime.Now,
+                Text = newCommentText
+            };
             contact.Comments.Insert(0, comment); // Add to the beginning
             newCommentText = string.Empty;
 
@@ -301,10 +306,10 @@
 
             // Add the comment to the activity timeline
             var activity = new Activity
-                {
-                    Date = comment.Date,
-                    Description = $"Comment added: '{comment.Text}'"
-                };
+            {
+                Date = comment.Date,
+                Description = $"Comment added: '{comment.Text}'"
+            };
             contact.Activities.Insert(0, activity);
         }
     }

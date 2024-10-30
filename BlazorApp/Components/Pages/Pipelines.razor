@@ -1,0 +1,65 @@
+﻿@page "/pipelines"
+@using BlazorApp.Models
+@inject BlazorApp.Services.PipelineService PipelineService
+@inject BlazorApp.Services.ContactService ContactService
+@inject BlazorApp.Services.CampaignService CampaignService
+@inject NavigationManager NavigationManager
+
+
+<PageTitle>Active Pipelines</PageTitle>
+
+<h3>Active Pipelines</h3>
+
+<div class="container">
+    @if (pipelines != null && pipelines.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Pipeline ID</th>
+                    <th>Campaign</th>
+                    <th>Contact</th>
+                    <th>Active Stage</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var pipeline in pipelines)
+                {
+                    var campaign = CampaignService.GetCampaignById(pipeline.CampaignId);
+                    var contact = ContactService.GetContactById(pipeline.ContactId);
+                    <tr>
+                        <td>@pipeline.Id</td>
+                        <td>@(campaign?.Name ?? "N/A")</td>
+                        <td>@(contact?.Name ?? "N/A")</td>
+                        <td>@pipeline.ActiveStage</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" @onclick="() => NavigateToPipelineDetail(pipeline.Id)">
+                                View Details
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No active pipelines available.</p>
+    }
+</div>
+
+@code {
+    private List<Pipeline> pipelines;
+
+    protected override void OnInitialized()
+    {
+        // Fetch all pipelines
+        pipelines = PipelineService.GetAllPipelines();
+    }
+
+    private void NavigateToPipelineDetail(int pipelineId)
+    {
+        NavigationManager.NavigateTo($"/pipeline/{pipelineId}");
+    }
+}

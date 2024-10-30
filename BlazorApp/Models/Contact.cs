@@ -12,7 +12,8 @@ namespace BlazorApp.Models
         public string Notes { get; set; }
         public string VAT { get; set; }
         public string Type { get; set; }  // Either "Lead" or "Customer"
-        public List<Campaign> Campaigns { get; set; }
+
+        public List<Pipeline> Pipelines { get; set; }
         public List<Comment> Comments { get; set; }
         public List<Activity> Activities { get; set; }
 

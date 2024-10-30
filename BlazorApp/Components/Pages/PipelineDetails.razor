@@ -1,17 +1,18 @@
-﻿@page "/campaign/{campaignId:int}/contact/{contactId:int}"
+﻿@page "/pipeline/{pipelineId:int}"
 @using BlazorApp.Models
-@inject BlazorApp.Services.CampaignService CampaignService
+@inject BlazorApp.Services.PipelineService PipelineService
 @inject BlazorApp.Services.ContactService ContactService
+@inject BlazorApp.Services.CampaignService CampaignService
 @inject NavigationManager NavigationManager
 
-<PageTitle>@campaign?.Name ?? "Campaign Detail"</PageTitle>
+<PageTitle>@campaign?.Name ?? "Pipeline Detail"</PageTitle>
 
 <button class="btn btn-link" @onclick="GoBack" style="font-size:24px;">
     &#8592; Back
 </button>
 
 <div class="container">
-    @if (campaign != null && contact != null)
+    @if (pipeline != null && contact != null && campaign != null)
     {
         <!-- Display campaign and contact information -->
         <h1>@campaign.Name</h1>
@@ -24,7 +25,7 @@
 
         <!-- Pipeline status buttons displayed as a chevron flow -->
         <div class="d-flex justify-content-center pipeline-status">
-            @foreach (var stage in campaign.PipelineStages)
+            @foreach (var stage in pipeline.PipelineStages)
             {
                 <!-- Chevron-shaped buttons representing each pipeline stage -->
                 <button class="@GetButtonClass(stage) chevron-button" @onclick="() => ToggleStage(stage)">
@@ -40,7 +41,7 @@
                 <h5>Open Tasks</h5>
                 <div class="scrollable-tasks">
                     <ul class="task-list">
-                        @foreach (var task in campaign.Tasks)
+                        @foreach (var task in pipeline.Tasks)
                         {
                             <li>
                                 <div class="task-item">
@@ -80,133 +81,102 @@
     }
     else
     {
-        <p>Loading campaign details...</p>
+        <p>Loading pipeline details...</p>
     }
 </div>
 
 <style>
-    /* General container margin */
-    .container {
-        margin: 20px;
+    /* Chevron button styles */
+    .pipeline-status {
+        margin-bottom: 20px;
     }
 
-    /* Styling for the campaign and contact headings */
-    h1 {
-        font-size: 2em;
+    .chevron-button {
+        position: relative;
+        padding: 10px 20px;
+        margin: 0 5px;
+        background-color: #e0e0e0;
+        border: none;
+        color: #000;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+        .chevron-button.active {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .chevron-button.completed {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .chevron-button::before,
+        .chevron-button::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-top: 20px solid transparent;
+            border-bottom: 20px solid transparent;
+        }
+
+        .chevron-button::before {
+            border-right: 10px solid #fff;
+            left: -10px;
+            top: 0;
+        }
+
+        .chevron-button::after {
+            border-left: 10px solid #fff;
+            right: -10px;
+            top: 0;
+        }
+
+    /* Task item styles */
+    .task-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .task-item {
+        position: relative;
+        background-color: #f8f9fa;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+    }
+
+    .task-item-content {
         margin-bottom: 10px;
     }
 
-    h4 {
-        font-size: 1.5em;
-        margin-bottom: 30px;
-    }
-
-    /* Pipeline status button container and spacing */
-    .pipeline-status {
-        display: flex;
-        justify-content: center;
-        gap: 10px; /* Space between the pipeline buttons */
-        margin-bottom: 20px;
-    }
-
-    /* Align text to center */
-    .text-center {
-        text-align: center;
-    }
-
-    /* Scrollable task list container */
-    .scrollable-tasks {
-        border: 2px solid #ddd; /* Border around the task list */
-        height: 300px; /* Fixed height for scrollable area */
-        padding: 10px;
-        overflow-y: scroll; /* Scrollable content if overflow */
-    }
-
-    /* Styling for individual task items */
-    .task-item {
-        border: 1px solid #ddd;
-        padding: 10px;
-        margin-bottom: 15px;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-        display: flex;
-        flex-direction: column;
-        /* Removed fixed height */
-    }
-
-    /* Task item content */
-    .task-item-content {
-        /* No changes needed here */
-    }
-
-    /* Remove margin from paragraphs inside task items */
-    .task-item p {
-        margin: 0;
-    }
-
-    /* Align the "Complete" button at the bottom of the task item */
     .task-item button {
-        margin-top: auto; /* Pushes the button to the bottom */
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
     }
 
-
-    /* Remove bullet points from the task list */
-    ul.task-list {
-        list-style-type: none;
-        padding-left: 0;
-    }
-
-    /* Styling for the latest quote/order/invoice box */
-    .latest-quote {
-        border: 1px solid #ddd;
-        padding: 20px;
-        height: 150px;
-        background-color: #f4f4f4;
-    }
-
-    /* Chevron-shaped buttons for pipeline stages */
-    .chevron-button {
-        clip-path: polygon(0 0, 90% 0, 100% 50%, 90% 100%, 0 100%, 10% 50%);
-        padding: 10px 20px;
-        background-color: #ddd;
-        border: none;
-        color: black;
-        margin-right: 5px;
-    }
-
-        /* Hover effect for chevron buttons */
-        .chevron-button:hover {
-            background-color: #007bff;
-            color: white;
+        .task-item button.completed {
+            background-color: #28a745;
+            color: #fff;
         }
 
-    /* Active button style */
-    .btn-primary.active {
-        background-color: #007bff;
-        color: white;
-    }
-
-    /* Inactive button style */
-    .btn-outline-secondary {
-        background-color: #ddd;
-        color: black;
-    }
-
-    /* Optional column width styling */
-    .col-md-4, .col-md-8 {
-        margin-bottom: 20px;
+    /* Scrollable tasks container */
+    .scrollable-tasks {
+        max-height: 400px;
+        overflow-y: auto;
     }
 </style>
 
 @code {
     [Parameter]
-    public int campaignId { get; set; }
+    public int pipelineId { get; set; }
 
-    [Parameter]
-    public int contactId { get; set; }
-
-    private Campaign campaign;
+    private Pipeline pipeline;
     private Contact contact;
+    private Campaign campaign;
 
     private LatestDataModel latestData = new LatestDataModel();
 
@@ -218,18 +188,18 @@
 
     protected override void OnInitialized()
     {
-        // Fetch the campaign data based on campaignId
-        campaign = CampaignService.GetCampaignById(campaignId);
+        // Fetch the pipeline data based on pipelineId
+        pipeline = PipelineService.GetPipelineById(pipelineId);
 
-        if (campaign == null)
+        if (pipeline == null)
         {
-            // Handle campaign not found
+            // Handle pipeline not found
             NavigationManager.NavigateTo("/contacts");
             return;
         }
 
-        // Fetch the contact data based on contactId
-        contact = ContactService.GetContactById(contactId);
+        // Fetch the contact data based on pipeline.ContactId
+        contact = ContactService.GetContactById(pipeline.ContactId);
 
         if (contact == null)
         {
@@ -238,17 +208,27 @@
             return;
         }
 
+        // Fetch the campaign data based on pipeline.CampaignId
+        campaign = CampaignService.GetCampaignById(pipeline.CampaignId);
+
+        if (campaign == null)
+        {
+            // Handle campaign not found
+            NavigationManager.NavigateTo("/campaigns");
+            return;
+        }
+
         // Initialize latest data
-        latestData = CampaignService.GetLatestData(contactId, campaign.ActiveStage);
+        latestData = PipelineService.GetLatestData(contact.Id, pipeline.ActiveStage);
 
         // Initialize all pipeline stages
-        foreach (var stage in campaign.PipelineStages)
+        foreach (var stage in pipeline.PipelineStages)
         {
-            stageStates[stage] = stage == campaign.ActiveStage;
+            stageStates[stage] = stage == pipeline.ActiveStage;
         }
 
         // Initialize all tasks as incomplete
-        foreach (var task in campaign.Tasks)
+        foreach (var task in pipeline.Tasks)
         {
             taskCompletionStates[task] = false;
         }
@@ -259,40 +239,45 @@
         NavigationManager.NavigateTo($"/contacts/{contact.Id}");
     }
 
-    // Toggle the active state of a pipeline stage when clicked
     private void ToggleStage(string stage)
     {
-        // Deactivate all stages
-        foreach (var key in campaign.PipelineStages)
+        // Update the active stage in the pipeline
+        pipeline.ActiveStage = stage;
+
+        // Update the stage states
+        foreach (var key in stageStates.Keys.ToList())
         {
-            stageStates[key] = false;
+            stageStates[key] = key == stage;
         }
 
-        // Activate the selected stage
-        stageStates[stage] = true;
-
-        // Update the campaign's active stage
-        campaign.ActiveStage = stage;
-
-        // Update latest data
-        latestData = CampaignService.GetLatestData(contactId, campaign.ActiveStage);
+        // Optionally, update the latest data based on the new stage
+        latestData = PipelineService.GetLatestData(contact.Id, pipeline.ActiveStage);
     }
 
-    // Return the button class based on the pipeline stage's active state
     private string GetButtonClass(string stage)
     {
-        return stageStates[stage] ? "btn btn-primary active" : "btn btn-outline-secondary";
+        if (stageStates[stage])
+        {
+            return "active";
+        }
+        else if (pipeline.PipelineStages.IndexOf(stage) < pipeline.PipelineStages.IndexOf(pipeline.ActiveStage))
+        {
+            return "completed";
+        }
+        else
+        {
+            return "";
+        }
     }
 
-    // Toggle the completion state of a task when "Complete" is clicked
     private void ToggleTaskComplete(TaskModel task)
     {
-        taskCompletionStates[task] = !taskCompletionStates[task];  // Flip the complete/incomplete state
+        // Toggle the completion status
+        taskCompletionStates[task] = !taskCompletionStates[task];
     }
 
-    // Return the button class based on the task's completion status
     private string GetButtonClassForTask(TaskModel task)
     {
-        return taskCompletionStates[task] ? "btn btn-primary active" : "btn btn-outline-secondary";
+        return taskCompletionStates[task] ? "btn btn-success completed" : "btn btn-primary";
     }
 }

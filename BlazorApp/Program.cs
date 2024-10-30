@@ -24,11 +24,12 @@ internal class Program
 
         builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
         builder.Services.AddAuthorizationCore();
-        builder.Services.AddScoped<ContactService>();
         builder.Services.AddScoped<NewContactService>();
         builder.Services.AddScoped<SideMenuService>();
-        builder.Services.AddScoped<BlazorApp.Services.CampaignService>();
         builder.Services.AddSingleton<CampaignService>();
+        builder.Services.AddSingleton<PipelineService>();
+        builder.Services.AddSingleton<ContactService>();
+
 
 
         builder.Services.AddScoped<IContactRepository, ContactRepository>();
