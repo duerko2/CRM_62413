@@ -1,3 +1,4 @@
+@using System.Security.Claims
 @using BlazorApp.Models
 @using BlazorApp.Services
 @page "/newcontact"
@@ -75,6 +76,8 @@
 
 @code {
     NewContactModel newContactModel = new NewContactModel();
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
     
     private void AddPerson()
     {
@@ -92,7 +95,7 @@
         contact.Persons.Add(person);
         newContactModel.Person = new Person();
     }
-    private void Submit()
+    private async void Submit()
     {
         var person = newContactModel.Person;
         var contact = newContactModel.Contact;
@@ -106,7 +109,12 @@
         // Check the Person form
         AddPerson();
         
-        NewContactService.SaveContact(contact);
+        var authState = await AuthenticationStateTask;
+        var user = authState.User;
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
+        var userIdInt = int.Parse(userId);
+        
+        NewContactService.SaveContact(contact, userIdInt);
         
         // Clear the form
         newContactModel.Contact = new Contact();

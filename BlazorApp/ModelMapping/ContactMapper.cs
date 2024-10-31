@@ -4,14 +4,17 @@ namespace BlazorApp.ModelMapping;
 
 public class ContactMapper
 {
-    public static Persistence.Entities.Contact MapToEntity(Contact model)
+    public static Persistence.Entities.Contact MapToEntity(Contact model, int userId)
     {
         var contactEntity = new Persistence.Entities.Contact
         {
             Id = model.Id,
             Name = model.Name,
             Address = model.Address,
-            UserId = 2, // Hardcoded for now
+            UserId = userId,
+            VAT = model.VAT,
+            Company = model.Company,
+            Type = (byte) model.Type
         };
         var persons = MapPersonsToEntity(contactEntity.Id, model.Persons);
         contactEntity.Persons = persons;
@@ -26,6 +29,9 @@ public class ContactMapper
             Id = entity.Id,
             Name = entity.Name,
             Address = entity.Address,
+            VAT = entity.VAT,
+            Company = entity.Company,
+            Type = (ContactType) entity.Type
         };
         var persons = MapPersonsToModel(entity.Persons);
         contactModel.Persons = (List<Person>)persons;

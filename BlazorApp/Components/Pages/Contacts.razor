@@ -6,6 +6,8 @@
 @inject Services.NewContactService NewContactService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject IJSRuntime JS
+
 
 
 <PageTitle>Contacts</PageTitle>
@@ -24,8 +26,14 @@ else
                 <th @onclick="@(() => SortContacts(nameof(Contact.Name)))">
                     Company Name @SortIndicator(nameof(Contact.Name))
                 </th>
-                <th @onclick="@(() => SortContacts(nameof(Contact.Id)))">
-                    ID @SortIndicator(nameof(Contact.Id))
+                <th @onclick="@(() => SortContacts(nameof(Contact.Type)))">
+                    Type @SortIndicator(nameof(Contact.Type))
+                </th>
+                <th @onclick="@(() => SortContacts(nameof(Contact.Company)))">
+                    Company @SortIndicator(nameof(Contact.Company))
+                </th>
+                <th @onclick="@(() => SortContacts(nameof(Contact.VAT)))">
+                    VAT @SortIndicator(nameof(Contact.VAT))
                 </th>
             </tr>
         </thead>
@@ -38,8 +46,9 @@ else
                             @contact.Name
                         </NavLink>
                     </td>
-
-                    <td>@contact.Id</td>
+                    <td>@contact.Type.ToString()</td>
+                    <td>@contact.Company</td>
+                    <td>@contact.VAT</td>
                 </tr>
             }
         </tbody>
@@ -65,18 +74,20 @@ else
     private List<Contact> contacts;
     private string currentSortColumn = nameof(Contact.Id);
     private bool ascending = true;
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
     protected override async void OnInitialized()
     {
-        await LoadContacts();
+        var authState = await AuthenticationStateTask;
+        var user = authState.User;
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
+        var userIdInt = int.Parse(userId);
+        await LoadContacts(userIdInt);
     }
 
-    private async Task LoadContacts()
+    private async Task LoadContacts(int userId)
     {
-        var user = (await AuthStateProvider.GetAuthenticationStateAsync()).User;
-        var userId = user.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-        var userIdInt = int.Parse(userId);
-        contacts = NewContactService.GetContacts(userIdInt);
+        contacts = NewContactService.GetContacts(userId);
         SortContacts(currentSortColumn);
         StateHasChanged();
     }

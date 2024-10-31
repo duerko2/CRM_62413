@@ -27,6 +27,7 @@ namespace BlazorApp.Services
         /// <returns>List of contacts.</returns>
         public List<Contact> GetContacts(int userId)
         {
+            Console.WriteLine("Getting contacts for user: " + userId);
             var contacts = _contactRepository.GetContactsForUser(userId);
             return contacts.Select(ContactMapper.MapToModel).ToList();
         }
@@ -82,9 +83,9 @@ namespace BlazorApp.Services
         /// Idempotent method to save a contact
         /// </summary>
         /// <param name="contact"></param>
-        public void SaveContact(Contact contact)
+        public async void SaveContact(Contact contact, int userId)
         {
-            var contactEntity = ContactMapper.MapToEntity(contact);
+            var contactEntity = ContactMapper.MapToEntity(contact, userId);
             
             if(contactEntity.Id == default)
             {

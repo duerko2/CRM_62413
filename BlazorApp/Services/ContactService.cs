@@ -85,7 +85,7 @@ namespace BlazorApp.Services
                     Address = "Tech Street 1, 1000 Copenhagen, Denmark",
                     Company = "TechCorp",
                     Notes = "Looking for cloud solutions.",
-                    Type = "Lead"
+                    Type = ContactType.Lead
                 },
                 new Contact
                 {
@@ -98,7 +98,7 @@ namespace BlazorApp.Services
                     Address = "Smart Avenue 7, 2000 Frederiksberg, Denmark",
                     Company = "Smart Solutions",
                     Notes = "Potential buyer for smart technologies.",
-                    Type = "Lead"
+                    Type = ContactType.Lead
                 },
                 new Contact
                 {
@@ -111,7 +111,7 @@ namespace BlazorApp.Services
                     Address = "Innovate Lane 2, 1500 Copenhagen, Denmark",
                     Company = "Innovatech",
                     Notes = "Interested in AI solutions.",
-                    Type = "Lead"
+                    Type = ContactType.Lead
                 },
                 new Contact
                 {
@@ -124,7 +124,7 @@ namespace BlazorApp.Services
                     Address = "Vision Street 9, 1700 Copenhagen, Denmark",
                     Company = "Visionary Labs",
                     Notes = "Interested in cloud and big data services.",
-                    Type = "Lead"
+                    Type = ContactType.Lead
                 },
                 new Contact
                 {
@@ -137,7 +137,7 @@ namespace BlazorApp.Services
                     Address = "NextGen Boulevard 11, 3000 Helsingør, Denmark",
                     Company = "NextGen IT",
                     Notes = "Currently evaluating IT solutions.",
-                    Type = "Lead"
+                    Type = ContactType.Lead
                 },
                 new Contact
                 {
@@ -150,7 +150,7 @@ namespace BlazorApp.Services
                     Address = "Cloud Street 15, 2300 Copenhagen, Denmark",
                     Company = "CloudTech",
                     Notes = "Existing customer for cloud storage.",
-                    Type = "Customer"
+                    Type = ContactType.Customer
                 },
                 new Contact
                 {
@@ -163,7 +163,7 @@ namespace BlazorApp.Services
                     Address = "Data Avenue 8, 2500 Valby, Denmark",
                     Company = "DataCorp",
                     Notes = "Existing customer for data analytics services.",
-                    Type = "Customer"
+                    Type = ContactType.Customer
                 },
                 new Contact
                 {
@@ -176,7 +176,7 @@ namespace BlazorApp.Services
                     Address = "SysAdmin Street 21, 2200 Nørrebro, Denmark",
                     Company = "SysAdminPro",
                     Notes = "Long-term client for system administration tools.",
-                    Type = "Customer"
+                    Type = ContactType.Customer
                 },
                 new Contact
                 {
@@ -189,7 +189,7 @@ namespace BlazorApp.Services
                     Address = "Security Lane 5, 2400 Copenhagen, Denmark",
                     Company = "SecureNet",
                     Notes = "Existing customer for network security solutions.",
-                    Type = "Customer"
+                    Type = ContactType.Customer
                 },
                 new Contact
                 {
@@ -202,7 +202,7 @@ namespace BlazorApp.Services
                     Address = "Energy Street 33, 4000 Roskilde, Denmark",
                     Company = "GreenEnergy Inc.",
                     Notes = "Renewable energy solutions customer.",
-                    Type = "Customer"
+                    Type = ContactType.Customer
                 }
             };
 
