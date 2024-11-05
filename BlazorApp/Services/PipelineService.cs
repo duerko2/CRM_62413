@@ -1,5 +1,4 @@
 ﻿using BlazorApp.Models;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,14 +6,7 @@ namespace BlazorApp.Services
 {
     public class PipelineService
     {
-        private List<Pipeline> pipelines;
-        private CampaignService campaignService;
-
-        public PipelineService(CampaignService campaignService)
-        {
-            this.campaignService = campaignService;
-            pipelines = InitializePipelines();
-        }
+        private List<Pipeline> pipelines = new List<Pipeline>();
 
         public List<Pipeline> GetAllPipelines()
         {
@@ -31,10 +23,13 @@ namespace BlazorApp.Services
             return pipelines.Where(p => p.ContactId == contactId).ToList();
         }
 
-        public void AddPipeline(Pipeline pipeline)
+        public void AddPipeline(Pipeline pipeline, List<string> stages)
         {
+            pipeline.PipelineStages = stages; // Set the dynamic stages
+            pipeline.Tasks ??= new List<TaskModel>(); // Ensure Tasks is initialized if it's null
             pipelines.Add(pipeline);
         }
+
 
         public int GetNextPipelineId()
         {
@@ -69,63 +64,6 @@ namespace BlazorApp.Services
                     Message = "No latest quote, order, or invoice available."
                 };
             }
-        }
-
-        private List<Pipeline> InitializePipelines()
-        {
-            var pipelinesList = new List<Pipeline>();
-            int pipelineIdCounter = 1;
-
-            for (int contactId = 1; contactId <= 10; contactId++)
-            {
-                // First Pipeline for each contact
-                pipelinesList.Add(new Pipeline
-                {
-                    Id = pipelineIdCounter++,
-                    ContactId = contactId,
-                    CampaignId = (contactId % 3) + 1, // Cycle through CampaignIds 1, 2, 3
-                    ActiveStage = "Lead",
-                    PipelineStages = new List<string> { "Lead", "Qualified Lead", "Proposal", "Negotiation", "Contract Sent", "Closed" },
-                    Tasks = new List<TaskModel>
-                    {
-                        new TaskModel
-                        {
-                            Id = pipelineIdCounter * 10 + 1,
-                            PipelineId = pipelineIdCounter - 1,
-                            Description = $"Initial contact with contact {contactId}",
-                            CreatedDate = DateTime.Now.AddDays(-contactId),
-                            Deadline = DateTime.Now.AddDays(30 - contactId)
-                        }
-                    },
-                    StartDate = DateTime.Now.AddDays(-contactId),
-                    EndDate = DateTime.Now.AddMonths(1)
-                });
-
-                // Second Pipeline for each contact
-                pipelinesList.Add(new Pipeline
-                {
-                    Id = pipelineIdCounter++,
-                    ContactId = contactId,
-                    CampaignId = ((contactId + 1) % 3) + 1, // Cycle through CampaignIds 1, 2, 3
-                    ActiveStage = "Proposal",
-                    PipelineStages = new List<string> { "Lead", "Proposal", "Negotiation", "Closed" },
-                    Tasks = new List<TaskModel>
-                    {
-                        new TaskModel
-                        {
-                            Id = pipelineIdCounter * 10 + 2,
-                            PipelineId = pipelineIdCounter - 1,
-                            Description = $"Prepare proposal for contact {contactId}",
-                            CreatedDate = DateTime.Now.AddDays(-contactId + 1),
-                            Deadline = DateTime.Now.AddDays(30 - contactId + 1)
-                        }
-                    },
-                    StartDate = DateTime.Now.AddDays(-contactId + 1),
-                    EndDate = DateTime.Now.AddMonths(2)
-                });
-            }
-
-            return pipelinesList;
         }
     }
 }

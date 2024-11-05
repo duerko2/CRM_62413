@@ -2,20 +2,19 @@
 @using BlazorApp.Models
 @inject BlazorApp.Services.PipelineService PipelineService
 @inject BlazorApp.Services.ContactService ContactService
-@inject BlazorApp.Services.CampaignService CampaignService
 @inject NavigationManager NavigationManager
 
-<PageTitle>@campaign?.Name ?? "Pipeline Detail"</PageTitle>
+<PageTitle>@pipeline?.CampaignName ?? "Pipeline Detail"</PageTitle>
 
 <button class="btn btn-link" @onclick="GoBack" style="font-size:24px;">
     &#8592; Back
 </button>
 
 <div class="container">
-    @if (pipeline != null && contact != null && campaign != null)
+    @if (pipeline != null && contact != null)
     {
-        <!-- Display campaign and contact information -->
-        <h1>@campaign.Name</h1>
+        <!-- Display campaign name and contact information -->
+        <h1>@pipeline.CampaignName</h1>
         <h4>@contact.Name (ID: @contact.Id)</h4>
 
         <!-- Centered Pipeline Status Heading -->
@@ -34,10 +33,10 @@
             }
         </div>
 
-        <!-- Section for displaying tasks and latest quote/order/invoice side by side -->
+        <!-- Section for displaying tasks, add task, and latest quote/order/invoice side by side in one row -->
         <div class="row mt-4">
             <!-- Open tasks column -->
-            <div class="col-md-4">
+            <div class="col-md-4 section-outline">
                 <h5>Open Tasks</h5>
                 <div class="scrollable-tasks">
                     <ul class="task-list">
@@ -47,7 +46,7 @@
                                 <div class="task-item">
                                     <div class="task-item-content">
                                         <!-- Display task description and dates -->
-                                        <p><strong>Description:</strong> @task.Description</p>
+                                        <p class="task-description"><strong>Description:</strong> @task.Description</p>
                                         <p><strong>Created:</strong> @($"{task.CreatedDate:dd/MM/yyyy}")</p>
                                         <p><strong>Deadline:</strong> @($"{task.Deadline:dd/MM/yyyy}")</p>
                                     </div>
@@ -62,8 +61,28 @@
                 </div>
             </div>
 
-            <!-- Latest (quote, order, invoice) column -->
-            <div class="col-md-8">
+            <!-- Add task column -->
+            <div class="col-md-4 section-outline">
+                <h5>Add Task</h5>
+                <div>
+                    <div class="form-group">
+                        <label for="taskDescription">Description</label>
+                        <input id="taskDescription" @bind="newTaskDescription" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="createdDate">Created Date</label>
+                        <input id="createdDate" type="date" @bind="newTaskCreatedDate" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="deadline">Deadline</label>
+                        <input id="deadline" type="date" @bind="newTaskDeadline" class="form-control" />
+                    </div>
+                    <button class="btn btn-primary mt-2" @onclick="AddTask">Add Task</button>
+                </div>
+            </div>
+
+            <!-- Latest quote/order/invoice column -->
+            <div class="col-md-4 section-outline">
                 <h5>Latest Quote/Order/Invoice</h5>
                 <div class="latest-quote">
                     @if (!string.IsNullOrEmpty(latestData.LatestType))
@@ -85,7 +104,17 @@
     }
 </div>
 
+
 <style>
+    /* Outline for each section to visually separate them */
+    .section-outline {
+        border: 1px solid #dee2e6; /* Light gray border */
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        background-color: #f8f9fa; /* Light background */
+    }
+
     /* Chevron button styles */
     .pipeline-status {
         margin-bottom: 20px;
@@ -141,17 +170,21 @@
     }
 
     .task-item {
-        position: relative;
         background-color: #f8f9fa;
         padding: 15px;
         margin-bottom: 10px;
         border-radius: 5px;
+        border: 1px solid #dee2e6; /* Outline for individual tasks */
+        word-wrap: break-word; /* Allows long text to wrap within boundaries */
+        position: relative; /* Enables absolute positioning for button */
     }
 
-    .task-item-content {
-        margin-bottom: 10px;
+    .task-description {
+        white-space: normal; /* Ensures text wraps to the next line */
+        overflow-wrap: break-word; /* Breaks long words to keep text within the container */
     }
 
+    /* Position the Complete button in the bottom-right corner */
     .task-item button {
         position: absolute;
         bottom: 10px;
@@ -176,7 +209,6 @@
 
     private Pipeline pipeline;
     private Contact contact;
-    private Campaign campaign;
 
     private LatestDataModel latestData = new LatestDataModel();
 
@@ -185,6 +217,11 @@
 
     // Track the completion status of each task
     private Dictionary<TaskModel, bool> taskCompletionStates = new Dictionary<TaskModel, bool>();
+
+    // New task fields
+    private string newTaskDescription;
+    private DateTime newTaskCreatedDate = DateTime.Today;
+    private DateTime newTaskDeadline = DateTime.Today;
 
     protected override void OnInitialized()
     {
@@ -205,16 +242,6 @@
         {
             // Handle contact not found
             NavigationManager.NavigateTo("/contacts");
-            return;
-        }
-
-        // Fetch the campaign data based on pipeline.CampaignId
-        campaign = CampaignService.GetCampaignById(pipeline.CampaignId);
-
-        if (campaign == null)
-        {
-            // Handle campaign not found
-            NavigationManager.NavigateTo("/campaigns");
             return;
         }
 
@@ -280,4 +307,31 @@
     {
         return taskCompletionStates[task] ? "btn btn-success completed" : "btn btn-primary";
     }
+
+    private void AddTask()
+    {
+        if (!string.IsNullOrWhiteSpace(newTaskDescription))
+        {
+            var newTask = new TaskModel
+            {
+                Id = pipeline.Tasks.Any() ? pipeline.Tasks.Max(t => t.Id) + 1 : 1,
+                PipelineId = pipelineId,
+                Description = newTaskDescription,
+                CreatedDate = newTaskCreatedDate,
+                Deadline = newTaskDeadline
+            };
+
+            // Add the new task to the pipeline's task list
+            pipeline.Tasks.Add(newTask);
+
+            // Add the task to taskCompletionStates with an initial state (false for incomplete)
+            taskCompletionStates[newTask] = false;
+
+            // Clear form fields after adding the task
+            newTaskDescription = string.Empty;
+            newTaskCreatedDate = DateTime.Today;
+            newTaskDeadline = DateTime.Today;
+        }
+    }
+}
 }

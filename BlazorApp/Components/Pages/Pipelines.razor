@@ -1,10 +1,9 @@
 ﻿@page "/pipelines"
 @using BlazorApp.Models
-@inject BlazorApp.Services.PipelineService PipelineService
-@inject BlazorApp.Services.ContactService ContactService
-@inject BlazorApp.Services.CampaignService CampaignService
+@using BlazorApp.Services
+@inject PipelineService PipelineService
+@inject ContactService ContactService
 @inject NavigationManager NavigationManager
-
 
 <PageTitle>Active Pipelines</PageTitle>
 
@@ -26,11 +25,10 @@
             <tbody>
                 @foreach (var pipeline in pipelines)
                 {
-                    var campaign = CampaignService.GetCampaignById(pipeline.CampaignId);
                     var contact = ContactService.GetContactById(pipeline.ContactId);
                     <tr>
                         <td>@pipeline.Id</td>
-                        <td>@(campaign?.Name ?? "N/A")</td>
+                        <td>@pipeline.CampaignName</td>
                         <td>@(contact?.Name ?? "N/A")</td>
                         <td>@pipeline.ActiveStage</td>
                         <td>
@@ -54,7 +52,6 @@
 
     protected override void OnInitialized()
     {
-        // Fetch all pipelines
         pipelines = PipelineService.GetAllPipelines();
     }
 
