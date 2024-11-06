@@ -1,9 +1,11 @@
 ﻿@page "/newpipeline"
 @using BlazorApp.Models
 @using BlazorApp.Services
+@using System.Security.Claims
 @inject PipelineService PipelineService
-@inject ContactService ContactService
+@inject NewContactService NewContactService
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>New Pipeline</PageTitle>
 
@@ -66,10 +68,25 @@
     private List<Contact> contacts = new List<Contact>();
     private bool showErrorMessage = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Load contacts for dropdown selection
-        contacts = ContactService.GetContacts();
+        // Obtain the current user's ID
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim != null)
+        {
+            int userId = int.Parse(userIdClaim.Value);
+
+            // Load contacts for dropdown selection from the database
+            contacts = NewContactService.GetContacts(userId);
+        }
+        else
+        {
+            // If the user is not authenticated (might rework to something else later, since it just "jumps" 
+            // to login page with this, should probably just hide all those menus when not logged in)
+            NavigationManager.NavigateTo("/login");
+        }
     }
 
     private void AssignPipeline()
