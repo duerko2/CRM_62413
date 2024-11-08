@@ -32,4 +32,6 @@ public class CrmDbContext : DbContext
     public DbSet<Company> Companies { get; set; }
     public DbSet<Campaign> Campaigns { get; set; }
     public DbSet<Task> Tasks { get; set; }
+    public DbSet<ContactComment> ContactComments { get; set; }
+    public DbSet<PipelineComment> PipelineComments { get; set; }
 }

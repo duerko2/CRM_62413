@@ -224,17 +224,17 @@ namespace BlazorApp.Services
         /// </summary>
         /// <param name="contactId">The ID of the contact.</param>
         /// <returns>List of sample comments.</returns>
-        private List<Comment> GetSampleComments(int contactId)
+        private List<ContactComment> GetSampleComments(int contactId)
         {
             // Generate some sample comments
-            return new List<Comment>
+            return new List<ContactComment>
             {
-                new Comment
+                new ContactComment
                 {
                     Date = DateTime.Now.AddDays(-contactId),
                     Text = "Initial contact made."
                 },
-                new Comment
+                new ContactComment
                 {
                     Date = DateTime.Now.AddDays(-contactId + 1),
                     Text = "Sent proposal."

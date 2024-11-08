@@ -6,8 +6,9 @@ public class Pipeline
     public int ContactId { get; set; }
     public virtual Contact Contact { get; set; }
     public int CampaignId { get; set; }
+    // Navigation properties
+
     public virtual Campaign Campaign { get; set; }
-    
-    // Navigation property to Task
     public virtual ICollection<Task> Tasks { get; set; }
+    public virtual ICollection<PipelineComment> Comments { get; set; }
 }

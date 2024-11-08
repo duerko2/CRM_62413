@@ -19,6 +19,7 @@ public class ContactRepository : IContactRepository
         {
             throw new InvalidOperationException("Contact not found");
         } 
+        _db.ChangeTracker.Clear();
         return contact;
     }
 
@@ -31,12 +32,14 @@ public class ContactRepository : IContactRepository
     {
         _db.Contacts.Add(contact);
         _db.SaveChanges();
+        _db.ChangeTracker.Clear();
     }
 
     public void UpdateContact(Contact contact)
     {
         _db.Contacts.Update(contact);
         _db.SaveChanges();
+        _db.ChangeTracker.Clear();
     }
 
     public void DeleteContact(int id)
@@ -48,5 +51,6 @@ public class ContactRepository : IContactRepository
         }
         _db.Contacts.Remove(contact);
         _db.SaveChanges();
+        _db.ChangeTracker.Clear();
     }
 }

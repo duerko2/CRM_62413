@@ -33,12 +33,42 @@ public class ContactMapper
             Company = entity.Company,
             Type = (ContactType) entity.Type
         };
-        var persons = MapPersonsToModel(entity.Persons);
-        contactModel.Persons = (List<Person>)persons;
+        contactModel.Persons = MapPersonsToModel(entity.Persons);
+        contactModel.Pipelines = MapPipelinesToModel(entity);
+        contactModel.Comments = MapCommentsToModel(entity, contactModel);
+        
+        contactModel.Activities = contactModel.Comments.Select(a => new Activity
+        {
+            Date = a.Date,
+            Description = $"Comment added: '{a.Text}'",
+        }).ToList();
+        
         return contactModel;
     }
 
-    private static object MapPersonsToModel(ICollection<Persistence.Entities.Person> entityPersons)
+    private static List<ContactComment> MapCommentsToModel(Persistence.Entities.Contact entity, Contact contactModel)
+    {
+        return entity.Comments.Select(c => new ContactComment
+        {
+            Id = c.Id,
+            Text = c.Text,
+            Date = c.Date,
+            ContactId = c.ContactId,
+            Contact = contactModel
+        }).ToList();
+    }
+
+    private static List<Pipeline> MapPipelinesToModel(Persistence.Entities.Contact entity)
+    {
+        return entity.Pipelines.Select(p => new Pipeline
+        {
+            Id = p.Id,
+            CampaignName = p.Campaign.Name,
+            ContactId = p.ContactId
+        }).ToList();
+    }
+
+    private static List<Person> MapPersonsToModel(ICollection<Persistence.Entities.Person> entityPersons)
     {
         return entityPersons.Select(p => new Person
         {

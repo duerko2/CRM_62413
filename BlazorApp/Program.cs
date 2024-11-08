@@ -26,6 +26,7 @@ internal class Program
         builder.Services.AddAuthorizationCore();
         builder.Services.AddScoped<NewContactService>();
         builder.Services.AddScoped<SideMenuService>();
+        builder.Services.AddScoped<CommentService>();
         builder.Services.AddSingleton<CampaignService>();
         builder.Services.AddSingleton<PipelineService>();
         builder.Services.AddSingleton<ContactService>();
@@ -33,6 +34,7 @@ internal class Program
 
 
         builder.Services.AddScoped<IContactRepository, ContactRepository>();
+        builder.Services.AddScoped<ICommentRepository, EfCommentRepository>();
 
         
         

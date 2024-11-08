@@ -19,6 +19,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+        Console.WriteLine("Authenticating....");
         var userId = await GetUserIdAsync();
         var username = await GetUsernameAsync();
 

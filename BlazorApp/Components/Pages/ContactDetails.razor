@@ -1,7 +1,10 @@
 ﻿@page "/contacts/{Id:int}"
+@using System.Security.Claims
 @using BlazorApp.Models
 @using BlazorApp.Services
 @inject ContactService ContactService
+@inject NewContactService NewContactService
+@inject CommentService CommentService
 @inject PipelineService PipelineService
 @inject NavigationManager NavigationManager
 
@@ -212,6 +215,8 @@
 @code {
     [Parameter]
     public int Id { get; set; }
+    
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
     private Contact contact;
     private string newCommentText;
@@ -220,7 +225,7 @@
     protected override void OnInitialized()
     {
         // Fetch the contact data based on the Id parameter
-        contact = ContactService.GetContactById(Id);
+        contact = NewContactService.GetContactById(Id);
 
         if (contact == null)
         {
@@ -240,7 +245,7 @@
         }
         if (contact.Comments == null)
         {
-            contact.Comments = new List<Comment>();
+            contact.Comments = new List<ContactComment>();
         }
         if (contact.Activities == null)
         {
@@ -266,7 +271,7 @@
         contact.Persons.Remove(person);
     }
 
-    private void SaveContact()
+    private async void SaveContact()
     {
         // Check if the contact type has changed
         if (contact.Type != previousType)
@@ -281,34 +286,42 @@
             // Update the previous type
             previousType = contact.Type;
         }
+        
+        var authState = await AuthenticationStateTask;
+        var user = authState.User;
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
+        var userIdInt = int.Parse(userId);
 
         // Save the updated contact
-        ContactService.UpdateContact(contact);
+        NewContactService.SaveContact(contact, userIdInt);
+        // ContactService.UpdateContact(contact);
         // Optionally display a success message
     }
 
     private void AddComment()
     {
-        if (!string.IsNullOrWhiteSpace(newCommentText))
-        {
-            var comment = new Comment
+        if (string.IsNullOrWhiteSpace(newCommentText))
+            return;
+        
+            var comment = new ContactComment
                 {
                     Date = DateTime.Now,
-                    Text = newCommentText
+                    Text = newCommentText,
+                    ContactId = contact.Id,
+                    Contact = contact
                 };
-            contact.Comments.Insert(0, comment); // Add to the beginning
-            newCommentText = string.Empty;
+            
+        contact.Comments.Insert(0, comment); // Add to the beginning
+        
+        comment.Id = CommentService.AddComment(comment);
 
-            // Save the updated contact
-            ContactService.UpdateContact(contact);
-
-            // Add the comment to the activity timeline
-            var activity = new Activity
-                {
-                    Date = comment.Date,
-                    Description = $"Comment added: '{comment.Text}'"
-                };
-            contact.Activities.Insert(0, activity);
-        }
+        // Add the comment to the activity timeline
+        var activity = new Activity
+            {
+                Date = comment.Date,
+                Description = $"Comment added: '{comment.Text}'"
+            };
+        contact.Activities.Insert(0, activity);
+        
     }
 }
