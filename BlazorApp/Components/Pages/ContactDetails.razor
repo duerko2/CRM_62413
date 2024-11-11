@@ -2,7 +2,6 @@
 @using System.Security.Claims
 @using BlazorApp.Models
 @using BlazorApp.Services
-@inject ContactService ContactService
 @inject NewContactService NewContactService
 @inject CommentService CommentService
 @inject PipelineService PipelineService
@@ -13,6 +12,16 @@
 <button class="btn btn-link" @onclick="GoBack" style="font-size:24px;">
     &#8592; Back
 </button>
+<div class="container-fluid">
+    <!-- Fixed Bottom Success Message -->
+    @if (!string.IsNullOrEmpty(message))
+    {
+    <div class="alert alert-success text-center fixed-bottom mx-auto" role="alert" style="max-width: 400px;">
+        @message
+    </div>
+    }
+    <!-- Rest of the existing markup... -->
+</div>
 
 <div class="container-fluid">
     <!-- Top Row: Name and ID -->
@@ -221,6 +230,9 @@
     private Contact contact;
     private string newCommentText;
     private ContactType previousType;
+    
+    private string message;
+    private Timer timer;
 
     protected override void OnInitialized()
     {
@@ -292,10 +304,10 @@
         var userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
         var userIdInt = int.Parse(userId);
 
-        // Save the updated contact
         NewContactService.SaveContact(contact, userIdInt);
-        // ContactService.UpdateContact(contact);
-        // Optionally display a success message
+        message = "Contact saved successfully.";
+        StartTimer();
+        
     }
 
     private void AddComment()
@@ -322,6 +334,18 @@
                 Description = $"Comment added: '{comment.Text}'"
             };
         contact.Activities.Insert(0, activity);
-        
+        message = "Comment added successfully.";
+        newCommentText = "";
+        StartTimer();
+    }
+    
+    private void StartTimer()
+    {
+        timer?.Dispose();
+        timer = new System.Threading.Timer(_ =>
+        {
+            message = null;
+            InvokeAsync(StateHasChanged); // Re-render the component
+        }, null, 3000, System.Threading.Timeout.Infinite);
     }
 }

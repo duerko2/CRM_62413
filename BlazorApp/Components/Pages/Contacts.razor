@@ -80,8 +80,13 @@ else
     {
         var authState = await AuthenticationStateTask;
         var user = authState.User;
-        var userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
-        var userIdInt = int.Parse(userId);
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier);
+        var userIdInt = userId == default ? default : int.Parse(userId.Value);
+        if (userIdInt == 0 )
+        {
+            Console.WriteLine("User not found");
+            return;
+        }
         await LoadContacts(userIdInt);
     }
 

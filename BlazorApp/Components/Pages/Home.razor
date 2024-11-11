@@ -1,13 +1,46 @@
 ﻿@page "/"
-@using Microsoft.AspNetCore.Components.Authorization
 
 <PageTitle>Home</PageTitle>
 
 <AuthorizeView>
     <Authorized>
-        <p>Welcome, you're logged in!</p>
+        <div class="d-flex flex-column justify-content-center align-items-center vh-100 bg-light text-center">
+            <h1 class="text-primary mb-3">Welcome to Your CRM Dashboard!</h1>
+            <p class="lead text-muted">Effortlessly manage customer relationships, track progress, and grow your business.</p>
+            <button class="btn btn-primary btn-lg mt-4">Go to Dashboard</button>
+        </div>
     </Authorized>
+
     <NotAuthorized>
-        <p>Please log in to access this content.</p>
+        <div class="container-fluid d-flex justify-content-center align-items-center bg-light">
+            <div class="d-flex flex-column align-items-center p-4 rounded-lg" style=" width: 100%;">
+                <h1 class="text-primary text-center mb-4">Welcome to Joakim and Marcus' CRM System</h1>
+                <p class="lead text-center text-muted mb-4">
+                    The ultimate tool for managing relationships, optimizing sales processes, and achieving growth.
+                </p>
+
+                <h3 class="text-secondary mb-3">Why Choose This CRM?</h3>
+                <p>Our CRM system is designed to help you keep all your customer information in one place, streamline communication, and drive sales through organized workflows. Join us and watch your business grow with ease!</p>
+
+                <h3 class="text-secondary mt-4">Key Features</h3>
+                <ul class="list-group list-group-flush mb-4">
+                    <li class="list-group-item">📈 <strong>Activity Timeline:</strong> Stay up-to-date on customer interactions and past activities.</li>
+                    <li class="list-group-item">🔄 <strong>Sales Pipelines:</strong> Visualize and manage sales campaigns from start to finish.</li>
+                    <li class="list-group-item">⏳ <strong>Automated Task Generation:</strong> Set reminders and generate tasks based on customer interactions.</li>
+                    <li class="list-group-item">📊 <strong>Analytics & Reports:</strong> Gain insights into customer behavior and sales trends.</li>
+                    <li class="list-group-item">💬 <strong>Integrated Communication:</strong> Communicate with customers through various channels.</li>
+                    <li class="list-group-item">👥 <strong>Contact Management:</strong> Keep detailed records for all your leads and customers.</li>
+                </ul>
+
+                <h3 class="text-secondary mt-4">Benefits of Using Our CRM</h3>
+                <p>
+                    Our CRM system provides a streamlined solution for managing your sales pipeline, maintaining customer relationships, and automating routine tasks. It’s tailored to enhance productivity and ensure that you can focus on what matters—growing your business.
+                </p>
+
+                <div class="text-center mt-4">
+                    <a href="/login" class="btn btn-primary btn-lg">Login to Start</a>
+                </div>
+            </div>
+        </div>
     </NotAuthorized>
 </AuthorizeView>

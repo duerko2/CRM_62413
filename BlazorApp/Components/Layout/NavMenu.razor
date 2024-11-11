@@ -11,7 +11,6 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
-
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill nav-menu-icon" aria-hidden="true"></span> Home
@@ -19,17 +18,16 @@
         </div>
 
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="login">
-                <span class="bi bi-plus-square-fill nav-menu-icon" aria-hidden="true"></span> Login
-            </NavLink>
+
         </div>
 
-        <!-- Contacts Menu -->
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" @onclick="MenuService.ToggleContactsMenu" href="/contacts">
-                <span class="bi bi-people-fill nav-menu-icon" aria-hidden="true"></span> Contacts
-            </NavLink>
-        </div>
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" @onclick="MenuService.ToggleContactsMenu" href="/contacts">
+                        <span class="bi bi-people-fill nav-menu-icon" aria-hidden="true"></span> Contacts
+                    </NavLink>
+                </div>
 
         @if (MenuService.IsContactsExpanded)
         {
@@ -64,6 +62,8 @@
             </NavLink>
         </div>
 
+        </Authorized>
+        </AuthorizeView>
     </nav>
 </div>
 

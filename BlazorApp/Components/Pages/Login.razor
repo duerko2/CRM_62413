@@ -1,26 +1,38 @@
 @using BlazorApp.Services
-@using Blazored.LocalStorage
 @page "/login"
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
-@inject ILocalStorageService LocalStorage
 
-<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    
-    <InputText @bind-Value="loginModel.Username" placeholder="Username" />
-    <InputText @bind-Value="loginModel.Password" type="password" placeholder="Password" />
-    
-    <button type="submit">Login</button>
+<AuthorizeView>
+<NotAuthorized Context="notAuthContext">
+    <EditForm Model="loginModel" OnValidSubmit="HandleLogin" class="d-flex justify-content-center align-items-center vh-100 bg-light">
+        <div class="card shadow-lg p-4" style="max-width: 400px; width: 100%;">
+            <h3 class="text-primary text-center mb-4">Login</h3>
+            <DataAnnotationsValidator/>
+            <ValidationSummary class="text-danger mb-3"/>
 
-</EditForm>
-<p>
-    <button @onclick="HandleLogout">
-        Logout
-    </button>
-</p>
-<p>@message</p>
+            <div class="form-group mb-3">
+                <InputText @bind-Value="loginModel.Username" placeholder="Username" class="form-control form-control-lg rounded-pill"/>
+            </div>
+
+            <div class="form-group mb-4">
+                <InputText @bind-Value="loginModel.Password" type="password" placeholder="Password" class="form-control form-control-lg rounded-pill"/>
+            </div>
+            <button type="submit">Login</button>
+            <p class="text-danger">@message</p>
+        </div>
+        
+    </EditForm>
+    </NotAuthorized>
+    <Authorized>
+        <p>
+            <button @onclick="HandleLogout">
+                Logout
+            </button>
+        </p>
+        <p>@message</p>
+    </Authorized>
+</AuthorizeView>
 
 
 @code {
