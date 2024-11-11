@@ -1,4 +1,9 @@
 using BlazorApp.Models;
+using BlazorApp.Persistence.Entities;
+using Contact = BlazorApp.Models.Contact;
+using ContactComment = BlazorApp.Models.ContactComment;
+using Person = BlazorApp.Models.Person;
+using Pipeline = BlazorApp.Models.Pipeline;
 
 namespace BlazorApp.ModelMapping;
 
@@ -36,14 +41,24 @@ public class ContactMapper
         contactModel.Persons = MapPersonsToModel(entity.Persons);
         contactModel.Pipelines = MapPipelinesToModel(entity);
         contactModel.Comments = MapCommentsToModel(entity, contactModel);
+        contactModel.Activities = MapActivitiesToModel(entity.ActivityLogs);
         
-        contactModel.Activities = contactModel.Comments.Select(a => new Activity
+        contactModel.Activities.AddRange(contactModel.Comments.Select(a => new Activity
         {
             Date = a.Date,
             Description = $"Comment added: '{a.Text}'",
-        }).ToList();
+        }).ToList());
         
         return contactModel;
+    }
+
+    private static List<Activity> MapActivitiesToModel(ICollection<ActivityLog> entityActivityLogs)
+    {
+        return entityActivityLogs.Select(a => new Activity
+        {
+            Date = a.Date,
+            Description = ActivityLogText.GetActivityLogText((ActivityLogType) a.Type)
+        }).ToList();
     }
 
     private static List<ContactComment> MapCommentsToModel(Persistence.Entities.Contact entity, Contact contactModel)
@@ -60,6 +75,10 @@ public class ContactMapper
 
     private static List<Pipeline> MapPipelinesToModel(Persistence.Entities.Contact entity)
     {
+        if(entity.Pipelines == null)
+        {
+            return new List<Pipeline>();
+        }
         return entity.Pipelines.Select(p => new Pipeline
         {
             Id = p.Id,

@@ -18,5 +18,6 @@ public class Contact
     public virtual ICollection<Person> Persons { get; set; }
     public virtual ICollection<Pipeline> Pipelines { get; set; }
     public virtual ICollection<ContactComment> Comments { get; set; }
+    public virtual ICollection<ActivityLog> ActivityLogs { get; set; }
 
 }

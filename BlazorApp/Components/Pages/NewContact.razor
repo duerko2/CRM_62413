@@ -40,24 +40,67 @@
         </div>
     </div>
 
+
+
     <!-- Person Information Section -->
     <h5 class="mb-3">Add Person Details</h5>
+    @foreach (var person in newContactModel.Contact.Persons.Select((value, index) => (value, index)))
+    {
     <div class="row mb-3">
         <div class="col-md-4">
             <div class="form-group">
-                <label for="personName">Person Name</label>
+                @if(person.index == 0)
+                {
+                    <label for="personName">Person Name</label>
+                }
+                <p>@person.value.Name</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @if (person.index == 0)
+                {
+                    <label for="personPhone">Phone Number</label>
+                }
+                <p>@person.value.Phone</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                @if (person.index == 0)
+                {
+                    <label for="personEmail">Email Address</label>
+                }
+                <p>@person.value.Email</p>
+            </div>
+        </div>
+    </div>
+    }
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="form-group">
+                @if (!newContactModel.Contact.Persons.Any())
+                {
+                    <label for="personName">Person Name</label>
+                }
                 <InputText id="personName" @bind-Value="newContactModel.Person.Name" class="form-control" placeholder="Enter name" />
             </div>
         </div>
         <div class="col-md-4">
             <div class="form-group">
-                <label for="personPhone">Phone Number</label>
+                @if(!newContactModel.Contact.Persons.Any())
+                {
+                    <label for="personPhone">Phone Number</label>
+                }
                 <InputText id="personPhone" @bind-Value="newContactModel.Person.Phone" class="form-control" placeholder="Enter phone" />
             </div>
         </div>
         <div class="col-md-4">
             <div class="form-group">
-                <label for="personEmail">Email Address</label>
+                @if(!newContactModel.Contact.Persons.Any())
+                {
+                    <label for="personEmail">Email Address</label>
+                }
                 <InputText id="personEmail" @bind-Value="newContactModel.Person.Email" class="form-control" placeholder="Enter email" />
             </div>
         </div>
@@ -117,9 +160,7 @@
         NewContactService.SaveContact(contact, userIdInt);
         
         // Clear the form
-        newContactModel.Contact = new Contact();
-        newContactModel.Contact.Persons = new List<Person>();
-        newContactModel.Person = new Person();
+        newContactModel = new NewContactModel();
     }
     
     private class NewContactModel

@@ -1,12 +1,7 @@
 ﻿@page "/contacts"
 @using System.Security.Claims
 @using BlazorApp.Models
-@using BlazorApp.Services
-@inject Services.ContactService ContactService
 @inject Services.NewContactService NewContactService
-@inject AuthenticationStateProvider AuthStateProvider
-@inject Blazored.LocalStorage.ILocalStorageService localStorage
-@inject IJSRuntime JS
 
 
 
@@ -71,7 +66,7 @@ else
 </style>
 
 @code {
-    private List<Contact> contacts;
+    private List<ContactListRow> contacts;
     private string currentSortColumn = nameof(Contact.Id);
     private bool ascending = true;
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
@@ -120,7 +115,7 @@ else
         }
     }
 
-    private object GetSortValue(Contact contact, string columnName)
+    private object GetSortValue(ContactListRow contact, string columnName)
     {
         return columnName switch
         {

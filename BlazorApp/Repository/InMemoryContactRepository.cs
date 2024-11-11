@@ -1,4 +1,5 @@
-using BlazorApp.Persistence.Entities;
+using BlazorApp.Models;
+using Contact = BlazorApp.Persistence.Entities.Contact;
 
 namespace BlazorApp.Repository;
 
@@ -25,6 +26,26 @@ public class InMemoryContactRepository : IContactRepository
     public Contact GetContact(int id)
     {
         return _contacts.Single(c => c.Id == id);
+    }
+
+    List<ContactListRow> IContactRepository.GetContactsForUser(int userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void AddContact(Models.Contact contact)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void UpdateContact(Models.Contact contact)
+    {
+        throw new NotImplementedException();
+    }
+
+    Models.Contact IContactRepository.GetContact(int id)
+    {
+        throw new NotImplementedException();
     }
 
     public List<Contact> GetContactsForUser(int userId)

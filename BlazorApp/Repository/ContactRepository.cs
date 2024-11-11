@@ -1,5 +1,7 @@
+using BlazorApp.ModelMapping;
+using BlazorApp.Models;
 using BlazorApp.Persistence;
-using BlazorApp.Persistence.Entities;
+using Contact = BlazorApp.Persistence.Entities.Contact;
 
 namespace BlazorApp.Repository;
 
@@ -12,34 +14,44 @@ public class ContactRepository : IContactRepository
         _db = db;
     }
         
-    public Contact GetContact(int id)
+    public Models.Contact GetContact(int id)
     {
         var contact = _db.Contacts.SingleOrDefault(c => c.Id == id);
         if (contact == default)
         {
             throw new InvalidOperationException("Contact not found");
         } 
+        var model = ContactMapper.MapToModel(contact);
         _db.ChangeTracker.Clear();
-        return contact;
+        return model;
     }
 
-    public List<Contact> GetContactsForUser(int userId)
+    public List<ContactListRow> GetContactsForUser(int userId)
     {
-        return _db.Contacts.Where(c => c.UserId == userId).ToList();
+        return _db.Contacts.Where(c => c.UserId == userId).Select(c => 
+            new ContactListRow { 
+                Id = c.Id, 
+                Name = c.Name, 
+                Type = (ContactType)c.Type, 
+                Address = c.Address, 
+                Company = c.Company, 
+                VAT = c.VAT
+            }).ToList();
     }
 
-    public void AddContact(Contact contact)
+    public void AddContact(Models.Contact contact)
     {
-        _db.Contacts.Add(contact);
+        var entity = ContactMapper.MapToEntity(contact, contact.UserId);
+        _db.Contacts.Add(entity);
         _db.SaveChanges();
-        _db.ChangeTracker.Clear();
+        contact.Id = entity.Id;
     }
 
-    public void UpdateContact(Contact contact)
+    public void UpdateContact(Models.Contact contact)
     {
-        _db.Contacts.Update(contact);
+        var entity = ContactMapper.MapToEntity(contact, contact.UserId);
+        _db.Contacts.Update(entity);
         _db.SaveChanges();
-        _db.ChangeTracker.Clear();
     }
 
     public void DeleteContact(int id)
@@ -51,6 +63,5 @@ public class ContactRepository : IContactRepository
         }
         _db.Contacts.Remove(contact);
         _db.SaveChanges();
-        _db.ChangeTracker.Clear();
     }
 }

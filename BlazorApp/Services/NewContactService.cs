@@ -2,8 +2,10 @@
 using BlazorApp.ModelMapping;
 using BlazorApp.Models;
 using BlazorApp.Persistence;
+using BlazorApp.Persistence.Entities;
 using BlazorApp.Repository;
 using Microsoft.AspNetCore.Components.Authorization;
+using Contact = BlazorApp.Models.Contact;
 
 
 namespace BlazorApp.Services
@@ -12,21 +14,22 @@ namespace BlazorApp.Services
     public class NewContactService
     {
         private readonly IContactRepository _contactRepository;
+        private readonly IActivityLogRepository _activityLogRepository;
 
-        public NewContactService(IContactRepository contactRepository, CrmDbContext db, AuthenticationStateProvider authenticationStateProvider)
+        public NewContactService(IContactRepository contactRepository, IActivityLogRepository activityLogRepository, CrmDbContext db, AuthenticationStateProvider authenticationStateProvider)
         {
             _contactRepository = contactRepository;
+            _activityLogRepository = activityLogRepository;
         }
         
         /// <summary>
         /// Retrieves the list of contacts.
         /// </summary>
         /// <returns>List of contacts.</returns>
-        public List<Contact> GetContacts(int userId)
+        public List<ContactListRow> GetContacts(int userId)
         {
-            Console.WriteLine("Getting contacts for user: " + userId);
             var contacts = _contactRepository.GetContactsForUser(userId);
-            return contacts.Select(ContactMapper.MapToModel).ToList();
+            return contacts;
         }
         
         /// <summary>
@@ -37,26 +40,29 @@ namespace BlazorApp.Services
         public Contact GetContactById(int id)
         {
             var contact = _contactRepository.GetContact(id);
-            var contactModel = ContactMapper.MapToModel(contact);
             
-            return contactModel;
+            return contact;
         }
 
         /// <summary>
         /// Idempotent method to save a contact and its related Persons.
         /// </summary>
         /// <param name="contact"></param>
-        public async void SaveContact(Contact contact, int userId)
+        public void SaveContact(Contact contact, int userId)
         {
-            var contactEntity = ContactMapper.MapToEntity(contact, userId);
+            contact.UserId = contact.UserId == default ? userId : contact.UserId;
             
-            if(contactEntity.Id == default)
+            if(contact.Id == default)
             {
-                _contactRepository.AddContact(contactEntity);
+                _contactRepository.AddContact(contact);
+                var contactId = contact.Id;
+                _activityLogRepository.AddActivityLog(new ActivityLog {ContactId = contactId, Date = DateTime.Now, Type = (int)ActivityLogType.ContactCreated});
             }
             else
             {
-                _contactRepository.UpdateContact(contactEntity);
+                var contactId = contact.Id;
+                _contactRepository.UpdateContact(contact);
+                _activityLogRepository.AddActivityLog(new ActivityLog {ContactId = contactId, Date = DateTime.Now, Type = (int)ActivityLogType.ContactUpdated});
             }
         }
     }

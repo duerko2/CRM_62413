@@ -11,4 +11,5 @@ public class Pipeline
     public virtual Campaign Campaign { get; set; }
     public virtual ICollection<Task> Tasks { get; set; }
     public virtual ICollection<PipelineComment> Comments { get; set; }
+    public virtual ICollection<ActivityLog> ActivityLogs { get; set; }
 }

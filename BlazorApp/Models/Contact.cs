@@ -11,6 +11,7 @@ namespace BlazorApp.Models
         public string Company { get; set; }
         public string Notes { get; set; }
         public string VAT { get; set; }
+        public int UserId { get; set; }
         public ContactType Type { get; set; }
 
         public List<Pipeline> Pipelines { get; set; }

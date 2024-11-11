@@ -35,6 +35,7 @@ internal class Program
 
         builder.Services.AddScoped<IContactRepository, ContactRepository>();
         builder.Services.AddScoped<ICommentRepository, EfCommentRepository>();
+        builder.Services.AddScoped<IActivityLogRepository, EFActivityLogRepository>();
 
         
         
