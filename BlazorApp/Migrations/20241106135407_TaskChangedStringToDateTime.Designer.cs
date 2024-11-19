@@ -4,6 +4,7 @@ using BlazorApp.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorApp.Migrations
 {
     [DbContext(typeof(CrmDbContext))]
-    partial class CrmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241106135407_TaskChangedStringToDateTime")]
+    partial class TaskChangedStringToDateTime
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -24,35 +27,6 @@ namespace BlazorApp.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("BlazorApp.Persistence.Entities.ActivityLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("ContactId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("PipelineId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContactId");
-
-                    b.HasIndex("PipelineId");
-
-                    b.ToTable("ActivityLogs");
-                });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Campaign", b =>
                 {
@@ -66,11 +40,13 @@ namespace BlazorApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("endDate")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("endDate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("startDate")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("startDate")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -131,31 +107,6 @@ namespace BlazorApp.Migrations
                     b.ToTable("Contacts");
                 });
 
-            modelBuilder.Entity("BlazorApp.Persistence.Entities.ContactComment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ContactId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ContactId");
-
-                    b.ToTable("ContactComments");
-                });
-
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Person", b =>
                 {
                     b.Property<int>("Id")
@@ -209,7 +160,7 @@ namespace BlazorApp.Migrations
                     b.ToTable("Pipelines");
                 });
 
-            modelBuilder.Entity("BlazorApp.Persistence.Entities.PipelineComment", b =>
+            modelBuilder.Entity("BlazorApp.Persistence.Entities.Task", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -259,21 +210,6 @@ namespace BlazorApp.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("BlazorApp.Persistence.Entities.ActivityLog", b =>
-                {
-                    b.HasOne("BlazorApp.Persistence.Entities.Contact", "Contact")
-                        .WithMany("ActivityLogs")
-                        .HasForeignKey("ContactId");
-
-                    b.HasOne("BlazorApp.Persistence.Entities.Pipeline", "Pipeline")
-                        .WithMany("ActivityLogs")
-                        .HasForeignKey("PipelineId");
-
-                    b.Navigation("Contact");
-
-                    b.Navigation("Pipeline");
-                });
-
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Contact", b =>
                 {
                     b.HasOne("BlazorApp.Persistence.Entities.User", "User")
@@ -283,17 +219,6 @@ namespace BlazorApp.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("BlazorApp.Persistence.Entities.ContactComment", b =>
-                {
-                    b.HasOne("BlazorApp.Persistence.Entities.Contact", "Contact")
-                        .WithMany("Comments")
-                        .HasForeignKey("ContactId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Contact");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Person", b =>
@@ -324,17 +249,6 @@ namespace BlazorApp.Migrations
                     b.Navigation("Campaign");
 
                     b.Navigation("Contact");
-                });
-
-            modelBuilder.Entity("BlazorApp.Persistence.Entities.PipelineComment", b =>
-                {
-                    b.HasOne("BlazorApp.Persistence.Entities.Pipeline", "Pipeline")
-                        .WithMany("Comments")
-                        .HasForeignKey("PipelineId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Pipeline");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Task", b =>
@@ -371,10 +285,6 @@ namespace BlazorApp.Migrations
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Contact", b =>
                 {
-                    b.Navigation("ActivityLogs");
-
-                    b.Navigation("Comments");
-
                     b.Navigation("Persons");
 
                     b.Navigation("Pipelines");
@@ -382,10 +292,6 @@ namespace BlazorApp.Migrations
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Pipeline", b =>
                 {
-                    b.Navigation("ActivityLogs");
-
-                    b.Navigation("Comments");
-
                     b.Navigation("Tasks");
                 });
 
