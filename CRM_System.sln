@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorApp", "BlazorApp\Blaz
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DummyDbData", "DummyDbData\DummyDbData.csproj", "{310CF531-30E0-4E7A-8D66-766B9B73E1B8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorApp.Tests", "BlazorApp.Tests\BlazorApp.Tests.csproj", "{328C328A-D6BE-4062-8A7C-5338E630415C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,5 +30,9 @@ Global
 		{310CF531-30E0-4E7A-8D66-766B9B73E1B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{310CF531-30E0-4E7A-8D66-766B9B73E1B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{310CF531-30E0-4E7A-8D66-766B9B73E1B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{328C328A-D6BE-4062-8A7C-5338E630415C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{328C328A-D6BE-4062-8A7C-5338E630415C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{328C328A-D6BE-4062-8A7C-5338E630415C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{328C328A-D6BE-4062-8A7C-5338E630415C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

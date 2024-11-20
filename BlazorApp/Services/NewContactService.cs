@@ -16,7 +16,7 @@ namespace BlazorApp.Services
         private readonly IContactRepository _contactRepository;
         private readonly IActivityLogRepository _activityLogRepository;
 
-        public NewContactService(IContactRepository contactRepository, IActivityLogRepository activityLogRepository, CrmDbContext db, AuthenticationStateProvider authenticationStateProvider)
+        public NewContactService(IContactRepository contactRepository, IActivityLogRepository activityLogRepository)
         {
             _contactRepository = contactRepository;
             _activityLogRepository = activityLogRepository;
