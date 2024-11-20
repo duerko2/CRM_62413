@@ -1,4 +1,5 @@
-﻿using System;
+﻿// Models/TaskModel.cs
+using System;
 
 namespace BlazorApp.Models
 {
@@ -9,5 +10,7 @@ namespace BlazorApp.Models
         public string Description { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime Deadline { get; set; }
+        public bool IsMasterTask { get; set; }
+        public string Stage { get; set; }
     }
 }

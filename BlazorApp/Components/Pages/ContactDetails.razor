@@ -6,6 +6,7 @@
 @inject CommentService CommentService
 @inject PipelineService PipelineService
 @inject NavigationManager NavigationManager
+@inject CampaignService CampaignService
 
 <PageTitle>Contact Detail</PageTitle>
 
@@ -74,9 +75,11 @@
                             <ul class="list-group">
                             @foreach (var pipeline in contact.Pipelines)
                             {
+                                var campaign = CampaignService.GetCampaignById(pipeline.CampaignId);
+
                                         <li class="list-group-item">
                                             <a href="@($"/pipeline/{pipeline.Id}")">
-                                        @pipeline.CampaignName
+                                        @campaign.Name
                                             </a>
                                         </li>
                             }

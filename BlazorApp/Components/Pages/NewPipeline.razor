@@ -4,12 +4,13 @@
 @using System.Security.Claims
 @inject PipelineService PipelineService
 @inject NewContactService NewContactService
+@inject CampaignService CampaignService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>New Pipeline</PageTitle>
 
-<h3>Assign New Pipeline to Contact</h3>
+<h3>Assign Campaign to Contact</h3>
 
 <EditForm Model="newPipelineModel" OnValidSubmit="AssignPipeline">
     <DataAnnotationsValidator />
@@ -27,45 +28,32 @@
         </select>
     </div>
 
-    <!-- Input for campaign name -->
+    <!-- Dropdown for selecting a campaign -->
     <div class="form-group">
-        <label for="campaignName">Campaign Name</label>
-        <InputText id="campaignName" class="form-control" @bind-Value="newPipelineModel.CampaignName" placeholder="Enter campaign name" />
-    </div>
-
-    <!-- Inputs for pipeline stages (up to 5) -->
-    <div class="form-group">
-        <label>Pipeline Stages (up to 5)</label>
-        <div class="mb-2">
-            <InputText class="form-control" @bind-Value="newPipelineModel.Stage1" placeholder="Stage 1" />
-        </div>
-        <div class="mb-2">
-            <InputText class="form-control" @bind-Value="newPipelineModel.Stage2" placeholder="Stage 2" />
-        </div>
-        <div class="mb-2">
-            <InputText class="form-control" @bind-Value="newPipelineModel.Stage3" placeholder="Stage 3" />
-        </div>
-        <div class="mb-2">
-            <InputText class="form-control" @bind-Value="newPipelineModel.Stage4" placeholder="Stage 4" />
-        </div>
-        <div class="mb-2">
-            <InputText class="form-control" @bind-Value="newPipelineModel.Stage5" placeholder="Stage 5" />
-        </div>
+        <label for="campaignId">Select Campaign</label>
+        <select id="campaignId" class="form-control" @bind="newPipelineModel.CampaignId">
+            <option value="">-- Select a Campaign --</option>
+            @foreach (var campaign in campaigns)
+            {
+                <option value="@campaign.Id">@campaign.Name</option>
+            }
+        </select>
     </div>
 
     <!-- Error message for missing required fields -->
     @if (showErrorMessage)
     {
-        <div class="alert alert-danger">Please select a contact and enter a campaign name.</div>
+        <div class="alert alert-danger">Please select a contact and a campaign.</div>
     }
 
     <!-- Submit button -->
-    <button type="submit" class="btn btn-primary">Assign Pipeline</button>
+    <button type="submit" class="btn btn-primary">Assign Campaign</button>
 </EditForm>
 
 @code {
-    private NewPipelineModel newPipelineModel = new NewPipelineModel();
-    private List<ContactListRow> contacts = new List<ContactListRow>();
+    private Pipeline newPipelineModel = new Pipeline();
+private List<ContactListRow> contacts = new List<ContactListRow>();
+    private List<Campaign> campaigns = new List<Campaign>();
     private bool showErrorMessage = false;
 
     protected override async Task OnInitializedAsync()
@@ -80,11 +68,13 @@
 
             // Load contacts for dropdown selection from the database
             contacts = NewContactService.GetContacts(userId);
+
+            // Load campaigns for dropdown selection
+            campaigns = CampaignService.GetAllCampaigns();
         }
         else
         {
-            // If the user is not authenticated (might rework to something else later, since it just "jumps" 
-            // to login page with this, should probably just hide all those menus when not logged in)
+            // Handle case where user is not authenticated
             NavigationManager.NavigateTo("/login");
         }
     }
@@ -92,42 +82,53 @@
     private void AssignPipeline()
     {
         // Check if required fields are filled
-        if (string.IsNullOrWhiteSpace(newPipelineModel.CampaignName) || newPipelineModel.ContactId == 0)
+        if (newPipelineModel.CampaignId == 0 || newPipelineModel.ContactId == 0)
         {
             showErrorMessage = true;
             return;
         }
 
-        showErrorMessage = false;
+        System.Diagnostics.Debug.WriteLine($"Assigning pipeline: ContactId = {newPipelineModel.ContactId}, CampaignId = {newPipelineModel.CampaignId}");
 
         // Assign a unique ID for the new pipeline
         newPipelineModel.Id = PipelineService.GetNextPipelineId();
 
-        // Use GetPipelineStages() to set the stages dynamically
-        PipelineService.AddPipeline(newPipelineModel, newPipelineModel.GetPipelineStages());
+        // Get the selected campaign
+        var selectedCampaign = CampaignService.GetCampaignById(newPipelineModel.CampaignId);
+
+        // Set the pipeline stages from the campaign
+        newPipelineModel.PipelineStages = selectedCampaign.Stages;
+
+        // Set the master task requirements and descriptions from the campaign
+        newPipelineModel.RequireMasterTask = selectedCampaign.RequireMasterTask;
+        newPipelineModel.MasterTaskDescriptions = selectedCampaign.MasterTaskDescriptions;
+
+        // Initialize the active stage to the first stage
+        newPipelineModel.ActiveStage = selectedCampaign.Stages.First();
+
+        // Initialize master tasks for the pipeline
+        for (int i = 0; i < selectedCampaign.Stages.Count; i++)
+        {
+            if (selectedCampaign.RequireMasterTask[i])
+            {
+                var masterTask = new TaskModel
+                    {
+                        Id = i + 1,
+                        PipelineId = newPipelineModel.Id,
+                        Description = selectedCampaign.MasterTaskDescriptions[i],
+                        CreatedDate = DateTime.Today,
+                        Deadline = DateTime.Today.AddDays(7),
+                        IsMasterTask = true,
+                        Stage = selectedCampaign.Stages[i]
+                    };
+                newPipelineModel.Tasks.Add(masterTask);
+            }
+        }
+
+        // Add the pipeline to the service
+        PipelineService.AddPipeline(newPipelineModel);
 
         // Navigate to the Pipeline Details page for the newly assigned pipeline
         NavigationManager.NavigateTo($"/pipeline/{newPipelineModel.Id}");
-    }
-
-    private class NewPipelineModel : Pipeline
-    {
-        public string Stage1 { get; set; } = "";
-        public string Stage2 { get; set; } = "";
-        public string Stage3 { get; set; } = "";
-        public string Stage4 { get; set; } = "";
-        public string Stage5 { get; set; } = "";
-
-        public NewPipelineModel()
-        {
-            Tasks = new List<TaskModel>(); // Initialize Tasks to an empty list
-        }
-
-        public List<string> GetPipelineStages()
-        {
-            return new List<string> { Stage1, Stage2, Stage3, Stage4, Stage5 }
-                .Where(stage => !string.IsNullOrWhiteSpace(stage))
-                .ToList();
-        }
     }
 }

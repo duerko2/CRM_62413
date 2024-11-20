@@ -1,5 +1,5 @@
-﻿using BlazorApp.Models;
-using System;
+﻿// Services/CampaignService.cs
+using BlazorApp.Models;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,11 +7,11 @@ namespace BlazorApp.Services
 {
     public class CampaignService
     {
-        private List<Campaign> campaigns;
+        private List<Campaign> campaigns = new List<Campaign>();
 
-        public CampaignService()
+        public List<Campaign> GetAllCampaigns()
         {
-            campaigns = InitializeCampaigns();
+            return campaigns;
         }
 
         public Campaign GetCampaignById(int id)
@@ -19,36 +19,14 @@ namespace BlazorApp.Services
             return campaigns.FirstOrDefault(c => c.Id == id);
         }
 
-        private List<Campaign> InitializeCampaigns()
+        public void AddCampaign(Campaign campaign)
         {
-            return new List<Campaign>
-            {
-                new Campaign
-                {
-                    Id = 1,
-                    Name = "Summer Promotion",
-                    DefaultPipelineStages = new List<string> { "Lead", "Qualified Lead", "Proposal", "Negotiation", "Contract Sent", "Closed" },
-                    StartDate = new DateTime(2024, 6, 1),
-                    EndDate = new DateTime(2024, 8, 31)
-                },
-                new Campaign
-                {
-                    Id = 2,
-                    Name = "Autumn Special",
-                    DefaultPipelineStages = new List<string> { "Lead", "Qualified Lead", "Proposal", "Negotiation", "Closed" },
-                    StartDate = new DateTime(2024, 9, 1),
-                    EndDate = new DateTime(2024, 11, 30)
-                },
-                new Campaign
-                {
-                    Id = 3,
-                    Name = "Winter Deals",
-                    DefaultPipelineStages = new List<string> { "Lead", "Proposal", "Negotiation", "Contract Sent", "Closed" },
-                    StartDate = new DateTime(2024, 12, 1),
-                    EndDate = new DateTime(2025, 2, 28)
-                },
-                // Add more campaigns as needed
-            };
+            campaigns.Add(campaign);
+        }
+
+        public int GetNextCampaignId()
+        {
+            return campaigns.Any() ? campaigns.Max(c => c.Id) + 1 : 1;
         }
     }
 }

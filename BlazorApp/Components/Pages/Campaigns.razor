@@ -1,0 +1,59 @@
+﻿<!-- Pages/Campaigns.razor -->
+@page "/campaigns"
+@using BlazorApp.Models
+@using BlazorApp.Services
+@inject CampaignService CampaignService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Campaigns</PageTitle>
+
+<h3>Campaigns</h3>
+
+<div class="container">
+    @if (campaigns != null && campaigns.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Campaign ID</th>
+                    <th>Campaign Name</th>
+                    <th>Number of Stages</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var campaign in campaigns)
+                {
+                    <tr>
+                        <td>@campaign.Id</td>
+                        <td>@campaign.Name</td>
+                        <td>@campaign.Stages.Count</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" @onclick="() => NavigateToCampaignDetail(campaign.Id)">
+                                View Details
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No campaigns available.</p>
+    }
+</div>
+
+@code {
+    private List<Campaign> campaigns;
+
+    protected override void OnInitialized()
+    {
+        campaigns = CampaignService.GetAllCampaigns();
+    }
+
+    private void NavigateToCampaignDetail(int campaignId)
+    {
+        NavigationManager.NavigateTo($"/campaigns/{campaignId}");
+    }
+}

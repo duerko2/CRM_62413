@@ -1,10 +1,14 @@
 ﻿@page "/pipeline/{pipelineId:int}"
 @using BlazorApp.Models
-@inject BlazorApp.Services.PipelineService PipelineService
-@inject BlazorApp.Services.ContactService ContactService
+@using BlazorApp.Services
+@inject PipelineService PipelineService
+@inject ContactService ContactService
 @inject NavigationManager NavigationManager
+@inject CampaignService CampaignService 
+@inject NewContactService NewContactService
 
-<PageTitle>@pipeline?.CampaignName ?? "Pipeline Detail"</PageTitle>
+
+<PageTitle>@campaign?.Name ?? "Pipeline Detail"</PageTitle>
 
 <button class="btn btn-link" @onclick="GoBack" style="font-size:24px;">
     &#8592; Back
@@ -14,7 +18,7 @@
     @if (pipeline != null && contact != null)
     {
         <!-- Display campaign name and contact information -->
-        <h1>@pipeline.CampaignName</h1>
+        <h1>@campaign.Name</h1>
         <h4>@contact.Name (ID: @contact.Id)</h4>
 
         <!-- Centered Pipeline Status Heading -->
@@ -43,7 +47,7 @@
                         @foreach (var task in pipeline.Tasks)
                         {
                             <li>
-                                <div class="task-item">
+                                <div class="task-item @(task.IsMasterTask ? "master-task" : "")">
                                     <div class="task-item-content">
                                         <!-- Display task description and dates -->
                                         <p class="task-description"><strong>Description:</strong> @task.Description</p>
@@ -106,6 +110,12 @@
 
 
 <style>
+    /* Styles for master tasks */
+    .master-task {
+        border-left: 5px solid #ffc107; /* Yellow border to highlight */
+        background-color: #fff3cd; /* Light yellow background */
+    }
+
     /* Outline for each section to visually separate them */
     .section-outline {
         border: 1px solid #dee2e6; /* Light gray border */
@@ -206,9 +216,11 @@
 @code {
     [Parameter]
     public int pipelineId { get; set; }
+    public int Id { get; set; }
 
     private Pipeline pipeline;
     private Contact contact;
+    private Campaign campaign;
 
     private LatestDataModel latestData = new LatestDataModel();
 
@@ -230,18 +242,30 @@
 
         if (pipeline == null)
         {
-            // Handle pipeline not found
+            Console.WriteLine($"Pipeline with ID {pipelineId} not found.");
             NavigationManager.NavigateTo("/contacts");
             return;
         }
 
-        // Fetch the contact data based on pipeline.ContactId
-        contact = ContactService.GetContactById(pipeline.ContactId);
+        Console.WriteLine($"Loaded Pipeline: ContactId = {pipeline.ContactId}, CampaignId = {pipeline.CampaignId}");
+
+        // Use NewContactService to fetch the contact
+        contact = NewContactService.GetContactById(pipeline.ContactId);
 
         if (contact == null)
         {
-            // Handle contact not found
+            Console.WriteLine($"Contact with ID {pipeline.ContactId} not found.");
             NavigationManager.NavigateTo("/contacts");
+            return;
+        }
+
+        // Fetch the campaign data
+        campaign = CampaignService.GetCampaignById(pipeline.CampaignId);
+
+        if (campaign == null)
+        {
+            Console.WriteLine($"Campaign with ID {pipeline.CampaignId} not found.");
+            NavigationManager.NavigateTo("/campaigns");
             return;
         }
 

@@ -82,7 +82,7 @@ public class ContactMapper
         return entity.Pipelines.Select(p => new Pipeline
         {
             Id = p.Id,
-            CampaignName = p.Campaign.Name,
+            CampaignId = p.CampaignId, 
             ContactId = p.ContactId
         }).ToList();
     }

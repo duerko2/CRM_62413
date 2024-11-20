@@ -6,38 +6,36 @@ namespace BlazorApp.Services
 {
     public class PipelineService
     {
-        private List<Pipeline> pipelines = new List<Pipeline>();
+            private List<Pipeline> pipelines = new List<Pipeline>();
 
-        public List<Pipeline> GetAllPipelines()
-        {
-            return pipelines;
-        }
-
-        public Pipeline GetPipelineById(int id)
-        {
-            return pipelines.FirstOrDefault(p => p.Id == id);
-        }
+            public List<Pipeline> GetAllPipelines()
+            {
+                return pipelines;
+            }
 
         public List<Pipeline> GetPipelinesByContactId(int contactId)
         {
             return pipelines.Where(p => p.ContactId == contactId).ToList();
         }
 
-        public void AddPipeline(Pipeline pipeline, List<string> stages)
-        {
-            pipeline.PipelineStages = stages; // Set the dynamic stages
-            pipeline.Tasks ??= new List<TaskModel>(); // Ensure Tasks is initialized if it's null
-            pipelines.Add(pipeline);
-        }
 
+        public Pipeline GetPipelineById(int id)
+            {
+                return pipelines.FirstOrDefault(p => p.Id == id);
+            }
 
-        public int GetNextPipelineId()
-        {
-            return pipelines.Any() ? pipelines.Max(p => p.Id) + 1 : 1;
-        }
+            public void AddPipeline(Pipeline pipeline)
+            {
+                pipelines.Add(pipeline);
+            }
 
-        // Simulate fetching latest data
-        public LatestDataModel GetLatestData(int contactId, string pipelineStage)
+            public int GetNextPipelineId()
+            {
+                return pipelines.Any() ? pipelines.Max(p => p.Id) + 1 : 1;
+            }
+
+            // Simulate fetching latest data
+            public LatestDataModel GetLatestData(int contactId, string pipelineStage)
         {
             if (pipelineStage == "Proposal")
             {

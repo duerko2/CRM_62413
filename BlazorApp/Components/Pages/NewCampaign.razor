@@ -1,0 +1,158 @@
+﻿@page "/newcampaign"
+@using BlazorApp.Models
+@using BlazorApp.Services
+@inject CampaignService CampaignService
+@inject NavigationManager NavigationManager
+
+<PageTitle>New Campaign</PageTitle>
+
+<h3>Create New Campaign</h3>
+
+<EditForm Model="newCampaignModel" OnValidSubmit="CreateCampaign">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="alert alert-danger" />
+
+    <!-- Input for campaign name -->
+    <div class="form-group">
+        <label for="campaignName">Campaign Name</label>
+        <InputText id="campaignName" class="form-control" @bind-Value="newCampaignModel.Name" placeholder="Enter campaign name" />
+    </div>
+
+    <!-- Dropdown to select number of stages -->
+    <div class="form-group">
+        <label for="numberOfStages">Number of Stages (1-5)</label>
+        <select id="numberOfStages" class="form-control" @onchange="OnNumberOfStagesChanged">
+            @for (int i = 1; i <= 5; i++)
+            {
+                <option value="@i" selected="@(i == numberOfStages)">@i</option>
+            }
+        </select>
+    </div>
+
+
+    <!-- Inputs for stages and master tasks -->
+    <div class="form-group">
+        <label>Define Stages</label>
+        @for (int i = 0; i < numberOfStages; i++)
+        {
+            var index = i;
+            <div class="stage-section">
+                <h5>Stage @(index + 1)</h5>
+                <div class="form-group">
+                    <label>Stage Name</label>
+                    <InputText class="form-control" @bind-Value="stageNames[index]" placeholder="Enter stage name" />
+                </div>
+                <div class="form-group">
+                    <label>
+                        <InputCheckbox @bind-Value="requireMasterTask[index]" />
+                        Require Master Task
+                    </label>
+                </div>
+                @if (requireMasterTask[index])
+                {
+                    <div class="form-group">
+                        <label>Master Task Description</label>
+                        <InputTextArea class="form-control" @bind-Value="masterTaskDescriptions[index]" placeholder="Enter master task description" />
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Error message for missing required fields -->
+    @if (showErrorMessage)
+    {
+        <div class="alert alert-danger">@errorMessage</div>
+    }
+
+    <!-- Submit button -->
+    <button type="submit" class="btn btn-primary">Create Campaign</button>
+</EditForm>
+
+<style>
+    .stage-section {
+        border: 1px solid #dee2e6;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        background-color: #f8f9fa;
+    }
+</style>
+
+@code {
+    private Campaign newCampaignModel = new Campaign();
+    private int numberOfStages = 1; // Default to 1 stage
+    private List<string> stageNames = new List<string>();
+    private List<bool> requireMasterTask = new List<bool>();
+    private List<string> masterTaskDescriptions = new List<string>();
+    private bool showErrorMessage = false;
+    private string errorMessage = "";
+
+    protected override void OnInitialized()
+    {
+        InitializeStageLists();
+    }
+
+    private void InitializeStageLists()
+    {
+        // Initialize lists based on the selected number of stages
+        stageNames = new List<string>(new string[numberOfStages]);
+        requireMasterTask = new List<bool>(new bool[numberOfStages]);
+        masterTaskDescriptions = new List<string>(new string[numberOfStages]);
+    }
+
+    private void OnNumberOfStagesChanged(ChangeEventArgs e)
+    {
+        int selectedNumber = int.Parse(e.Value.ToString());
+        numberOfStages = selectedNumber;
+        InitializeStageLists();
+    }
+
+    private void CreateCampaign()
+    {
+        // Validate required fields
+        if (string.IsNullOrWhiteSpace(newCampaignModel.Name))
+        {
+            showErrorMessage = true;
+            errorMessage = "Please enter a campaign name.";
+            return;
+        }
+
+        // Check that all stages have names
+        bool allStagesNamed = true;
+        for (int i = 0; i < numberOfStages; i++)
+        {
+            if (string.IsNullOrWhiteSpace(stageNames[i]))
+            {
+                allStagesNamed = false;
+                break;
+            }
+        }
+
+        if (!allStagesNamed)
+        {
+            showErrorMessage = true;
+            errorMessage = "Please provide names for all stages.";
+            return;
+        }
+
+        System.Diagnostics.Debug.WriteLine("Campagin created!!!!!!!!!!!");
+
+
+        showErrorMessage = false;
+
+        // Set the campaign ID
+        newCampaignModel.Id = CampaignService.GetNextCampaignId();
+
+        // Set the stages and master tasks
+        newCampaignModel.Stages = stageNames.Take(numberOfStages).ToList();
+        newCampaignModel.RequireMasterTask = requireMasterTask.Take(numberOfStages).ToList();
+        newCampaignModel.MasterTaskDescriptions = masterTaskDescriptions.Take(numberOfStages).ToList();
+
+        // Add the campaign to the service
+        CampaignService.AddCampaign(newCampaignModel);
+
+        // Navigate to the Campaigns page
+        NavigationManager.NavigateTo("/campaigns");
+    }
+}
