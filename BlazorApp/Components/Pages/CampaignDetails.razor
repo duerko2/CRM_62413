@@ -1,0 +1,101 @@
+﻿@page "/campaign/{campaignId:int}"
+@using BlazorApp.Models
+@using BlazorApp.Services
+@inject CampaignService CampaignService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Campaign Details</PageTitle>
+
+<button class="btn btn-link" @onclick="GoBack" style="font-size:24px;">
+    &#8592; Back
+</button>
+
+<div class="container">
+    @if (campaign != null)
+    {
+        <h1>Campaign Details</h1>
+
+        <!-- Campaign Information -->
+        <div class="campaign-info">
+            <p><strong>Campaign Name:</strong> @campaign.Name</p>
+            <p><strong>Campaign ID:</strong> @campaign.Id</p>
+            <p><strong>Number of Stages:</strong> @campaign.Stages.Count</p>
+        </div>
+
+        <!-- Stages and Master Tasks -->
+        <h3>Stages and Master Tasks</h3>
+        <ul class="stage-list">
+            @for (int i = 0; i < campaign.Stages.Count; i++)
+            {
+                <li class="stage-item">
+                    <h5>Stage @(i + 1): @campaign.Stages[i]</h5>
+                    @if (campaign.RequireMasterTask[i])
+                    {
+                        <p><strong>Master Task Description:</strong> @campaign.MasterTaskDescriptions[i]</p>
+                    }
+                    else
+                    {
+                        <p><em>No Master Task for this stage.</em></p>
+                    }
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>Loading campaign details...</p>
+    }
+</div>
+
+<style>
+    .campaign-info {
+        margin-bottom: 20px;
+        padding: 10px;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        background-color: #f8f9fa;
+    }
+
+    .stage-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .stage-item {
+        border: 1px solid #dee2e6;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        background-color: #ffffff;
+    }
+
+    .stage-item h5 {
+        margin-bottom: 10px;
+        font-size: 18px;
+        color: #007bff;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public int campaignId { get; set; }
+
+    private Campaign campaign;
+
+    protected override void OnInitialized()
+    {
+        // Fetch campaign data by ID
+        campaign = CampaignService.GetCampaignById(campaignId);
+
+        if (campaign == null)
+        {
+            Console.WriteLine($"Campaign with ID {campaignId} not found.");
+            NavigationManager.NavigateTo("/campaigns");
+        }
+    }
+
+    private void GoBack()
+    {
+        NavigationManager.NavigateTo("/campaigns");
+    }
+}
