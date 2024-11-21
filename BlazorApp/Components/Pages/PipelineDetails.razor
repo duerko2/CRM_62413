@@ -26,36 +26,71 @@
             <h5 style="font-size: 24px;">Pipeline Status</h5>
         </div>
 
-        <!-- Pipeline status buttons displayed as a chevron flow -->
-        <div class="d-flex justify-content-center pipeline-status">
-            @foreach (var stage in pipeline.PipelineStages)
+        <!-- Pipeline status buttons displayed as a flow -->
+        <div class="pipeline-status">
+            @for (int i = 0; i < pipeline.PipelineStages.Count; i++)
             {
-                <!-- Chevron-shaped buttons representing each pipeline stage -->
-                <button class="@GetButtonClass(stage) chevron-button" @onclick="() => ToggleStage(stage)">
+                var stage = pipeline.PipelineStages[i];
+
+                <!-- Stage button -->
+                <button class="@GetButtonClass(stage) stage-button"
+                        @onclick="() => TryToggleStage(stage, i)"
+                        disabled="@(ShouldDisableStage(stage))">
                     @stage
                 </button>
+
+                <!-- Arrow connector -->
+                @if (i < pipeline.PipelineStages.Count - 1)
+                {
+                    <div class="stage-connector">➔</div>
+                }
             }
         </div>
 
-        <!-- Section for displaying tasks, add task, and latest quote/order/invoice side by side in one row -->
+        <!-- Notification message -->
+        @if (!string.IsNullOrEmpty(notificationMessage))
+        {
+            <div class="alert alert-warning text-center mt-3">
+                @notificationMessage
+            </div>
+        }
+
+        <!-- Section for tasks -->
         <div class="row mt-4">
-            <!-- Open tasks column -->
+            <!-- Tasks column -->
             <div class="col-md-4 section-outline">
-                <h5>Open Tasks</h5>
+                <h5>Tasks</h5>
+
+                <!-- Master Task for the current stage -->
+                @if (currentMasterTask != null)
+                {
+                    <div class="task-item master-task">
+                        <div class="task-item-content">
+                            <p><strong>Master Task:</strong> @currentMasterTask.Description</p>
+                            <button class="@GetButtonClassForTask(currentMasterTask)" 
+                                    disabled="@taskCompletionStates[currentMasterTask]" 
+                                    @onclick="() => ToggleTaskComplete(currentMasterTask)">
+                                @(taskCompletionStates[currentMasterTask] ? "Completed" : "Complete")
+                            </button>
+                        </div>
+                    </div>
+                }
+
+                <!-- Regular Tasks -->
                 <div class="scrollable-tasks">
                     <ul class="task-list">
-                        @foreach (var task in pipeline.Tasks)
+                        @foreach (var task in sortedTasks)
                         {
                             <li>
                                 <div class="task-item @(task.IsMasterTask ? "master-task" : "")">
                                     <div class="task-item-content">
-                                        <!-- Display task description and dates -->
                                         <p class="task-description"><strong>Description:</strong> @task.Description</p>
                                         <p><strong>Created:</strong> @($"{task.CreatedDate:dd/MM/yyyy}")</p>
                                         <p><strong>Deadline:</strong> @($"{task.Deadline:dd/MM/yyyy}")</p>
                                     </div>
-                                    <!-- Toggleable "Complete" button for each task -->
-                                    <button class="@GetButtonClassForTask(task)" @onclick="() => ToggleTaskComplete(task)">
+                                    <button class="@GetButtonClassForTask(task)" 
+                                            disabled="@(task.IsMasterTask && taskCompletionStates[task])" 
+                                            @onclick="() => ToggleTaskComplete(task)">
                                         @(taskCompletionStates[task] ? "Completed" : "Complete")
                                     </button>
                                 </div>
@@ -110,12 +145,6 @@
 
 
 <style>
-    /* Styles for master tasks */
-    .master-task {
-        border-left: 5px solid #ffc107; /* Yellow border to highlight */
-        background-color: #fff3cd; /* Light yellow background */
-    }
-
     /* Outline for each section to visually separate them */
     .section-outline {
         border: 1px solid #dee2e6; /* Light gray border */
@@ -124,54 +153,6 @@
         margin-bottom: 10px;
         background-color: #f8f9fa; /* Light background */
     }
-
-    /* Chevron button styles */
-    .pipeline-status {
-        margin-bottom: 20px;
-    }
-
-    .chevron-button {
-        position: relative;
-        padding: 10px 20px;
-        margin: 0 5px;
-        background-color: #e0e0e0;
-        border: none;
-        color: #000;
-        font-size: 14px;
-        cursor: pointer;
-    }
-
-        .chevron-button.active {
-            background-color: #007bff;
-            color: #fff;
-        }
-
-        .chevron-button.completed {
-            background-color: #28a745;
-            color: #fff;
-        }
-
-        .chevron-button::before,
-        .chevron-button::after {
-            content: '';
-            position: absolute;
-            width: 0;
-            height: 0;
-            border-top: 20px solid transparent;
-            border-bottom: 20px solid transparent;
-        }
-
-        .chevron-button::before {
-            border-right: 10px solid #fff;
-            left: -10px;
-            top: 0;
-        }
-
-        .chevron-button::after {
-            border-left: 10px solid #fff;
-            right: -10px;
-            top: 0;
-        }
 
     /* Task item styles */
     .task-list {
@@ -189,6 +170,12 @@
         position: relative; /* Enables absolute positioning for button */
     }
 
+    .task-item.master-task {
+        border-left: 5px solid #ffc107; /* Yellow border to highlight */
+        background-color: #fff3cd; /* Light yellow background */
+        border: 1px solid #ffc107; /* Optional: yellow border for emphasis */
+    }
+
     .task-description {
         white-space: normal; /* Ensures text wraps to the next line */
         overflow-wrap: break-word; /* Breaks long words to keep text within the container */
@@ -201,17 +188,63 @@
         right: 10px;
     }
 
-        .task-item button.completed {
-            background-color: #28a745;
-            color: #fff;
-        }
+    .task-item button.completed {
+        background-color: #28a745;
+        color: #fff;
+    }
 
     /* Scrollable tasks container */
     .scrollable-tasks {
         max-height: 400px;
         overflow-y: auto;
     }
+
+    /* Stage flow container */
+    .pipeline-status {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px; /* Space between stages */
+        margin: 20px 0;
+    }
+
+    /* Stage button */
+    .stage-button {
+        background-color: #e0e0e0;
+        color: #000;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px; /* Rounded edges for flow appearance */
+        font-size: 14px;
+        max-width: 150px; /* Accommodates up to 20 characters */
+        overflow-wrap: break-word; /* Handles long text */
+        word-break: break-word;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .stage-button.active {
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    .stage-button.completed {
+        background-color: #28a745;
+        color: #fff;
+    }
+
+    /* Arrow connector */
+    .stage-connector {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: purple; /* Updated arrow color to purple */
+        font-size: 24px; /* Adjust arrow size */
+        margin: 0 5px; /* Space around the arrow */
+    }
 </style>
+
+
 
 @code {
     [Parameter]
@@ -223,6 +256,9 @@
     private Campaign campaign;
 
     private LatestDataModel latestData = new LatestDataModel();
+    private TaskModel currentMasterTask;
+    private List<TaskModel> sortedTasks;
+    private string notificationMessage = "";
 
     // Track the active/inactive state of pipeline stages
     private Dictionary<string, bool> stageStates = new Dictionary<string, bool>();
@@ -283,6 +319,25 @@
         {
             taskCompletionStates[task] = false;
         }
+
+        UpdateTasks();
+    }
+
+    private void UpdateTasks()
+    {
+        // Identify the master task for the current stage
+        currentMasterTask = pipeline.Tasks
+            .FirstOrDefault(t => t.IsMasterTask && t.Stage == pipeline.ActiveStage);
+
+        // Filter and sort tasks:
+        // 1. Include completed master tasks from previous stages.
+        // 2. Exclude master tasks for future stages.
+        // 3. Sort by completion status, with incomplete tasks first.
+        sortedTasks = pipeline.Tasks
+            .Where(t => !t.IsMasterTask || taskCompletionStates[t]) // Include only completed master tasks or regular tasks
+            .OrderBy(t => taskCompletionStates[t]) // Incomplete tasks first
+            .ThenBy(t => t.IsMasterTask) // Master tasks appear above regular tasks
+            .ToList();
     }
 
     private void GoBack()
@@ -292,18 +347,24 @@
 
     private void ToggleStage(string stage)
     {
-        // Update the active stage in the pipeline
+        // Prevent moving to the next stage if the master task is not completed
+        if (currentMasterTask != null && !taskCompletionStates[currentMasterTask] && stage != pipeline.ActiveStage)
+        {
+            return;
+        }
+
+        // Update active stage
         pipeline.ActiveStage = stage;
 
-        // Update the stage states
+        // Update stage states
         foreach (var key in stageStates.Keys.ToList())
         {
             stageStates[key] = key == stage;
         }
 
-        // Optionally, update the latest data based on the new stage
-        latestData = PipelineService.GetLatestData(contact.Id, pipeline.ActiveStage);
+        UpdateTasks();
     }
+
 
     private string GetButtonClass(string stage)
     {
@@ -323,8 +384,24 @@
 
     private void ToggleTaskComplete(TaskModel task)
     {
-        // Toggle the completion status
+        if (task.IsMasterTask && taskCompletionStates[task])
+        {
+            // Prevent toggling master tasks back once completed
+            return;
+        }
+
         taskCompletionStates[task] = !taskCompletionStates[task];
+        UpdateTasks();
+    }
+
+    private bool ShouldDisableStage(string stage)
+    {
+        if (stage == pipeline.ActiveStage) return false;
+
+        var currentIndex = pipeline.PipelineStages.IndexOf(pipeline.ActiveStage);
+        var targetIndex = pipeline.PipelineStages.IndexOf(stage);
+
+        return currentIndex + 1 != targetIndex;
     }
 
     private string GetButtonClassForTask(TaskModel task)
@@ -337,13 +414,13 @@
         if (!string.IsNullOrWhiteSpace(newTaskDescription))
         {
             var newTask = new TaskModel
-            {
-                Id = pipeline.Tasks.Any() ? pipeline.Tasks.Max(t => t.Id) + 1 : 1,
-                PipelineId = pipelineId,
-                Description = newTaskDescription,
-                CreatedDate = newTaskCreatedDate,
-                Deadline = newTaskDeadline
-            };
+                {
+                    Id = pipeline.Tasks.Any() ? pipeline.Tasks.Max(t => t.Id) + 1 : 1,
+                    PipelineId = pipelineId,
+                    Description = newTaskDescription,
+                    CreatedDate = newTaskCreatedDate,
+                    Deadline = newTaskDeadline
+                };
 
             // Add the new task to the pipeline's task list
             pipeline.Tasks.Add(newTask);
@@ -355,7 +432,23 @@
             newTaskDescription = string.Empty;
             newTaskCreatedDate = DateTime.Today;
             newTaskDeadline = DateTime.Today;
+
+            UpdateTasks();
         }
     }
-}
+
+
+    private void TryToggleStage(string stage, int stageIndex)
+    {
+        if (currentMasterTask != null && !taskCompletionStates[currentMasterTask])
+        {
+            // Notify the user if the master task is not completed
+            notificationMessage = "Complete the master task for this stage before proceeding.";
+            return;
+        }
+
+        // Clear notification if applicable and move to the next stage
+        notificationMessage = "";
+        ToggleStage(stage);
+    }
 }
