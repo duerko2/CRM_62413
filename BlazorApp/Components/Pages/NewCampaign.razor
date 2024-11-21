@@ -29,7 +29,6 @@
         </select>
     </div>
 
-
     <!-- Inputs for stages and master tasks -->
     <div class="form-group">
         <label>Define Stages</label>
@@ -39,8 +38,8 @@
             <div class="stage-section">
                 <h5>Stage @(index + 1)</h5>
                 <div class="form-group">
-                    <label>Stage Name</label>
-                    <InputText class="form-control" @bind-Value="stageNames[index]" placeholder="Enter stage name" />
+                    <label>Stage Name (max 20 chars)</label>
+                    <InputText class="form-control" maxlength="20" @bind-Value="stageNames[index]" placeholder="Enter stage name" />
                 </div>
                 <div class="form-group">
                     <label>
@@ -120,9 +119,9 @@
 
         // Check that all stages have names
         bool allStagesNamed = true;
-        for (int i = 0; i < numberOfStages; i++)
+        foreach (var name in stageNames.Take(numberOfStages))
         {
-            if (string.IsNullOrWhiteSpace(stageNames[i]))
+            if (string.IsNullOrWhiteSpace(name))
             {
                 allStagesNamed = false;
                 break;
@@ -136,8 +135,21 @@
             return;
         }
 
-        System.Diagnostics.Debug.WriteLine("Campagin created!!!!!!!!!!!");
+        // Check for stage name length
+        if (stageNames.Any(name => name.Length > 20))
+        {
+            showErrorMessage = true;
+            errorMessage = "Stage names must be 20 characters or fewer.";
+            return;
+        }
 
+        // Check for duplicate stage names
+        if (stageNames.Distinct().Count() != numberOfStages)
+        {
+            showErrorMessage = true;
+            errorMessage = "Stage names must be unique.";
+            return;
+        }
 
         showErrorMessage = false;
 
