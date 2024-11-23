@@ -9,7 +9,7 @@ public class Pipeline
     // Navigation properties
 
     public virtual Campaign Campaign { get; set; }
-    public virtual ICollection<Task> Tasks { get; set; }
+    public virtual ICollection<PipelineTask> Tasks { get; set; }
     public virtual ICollection<PipelineComment> Comments { get; set; }
     public virtual ICollection<ActivityLog> ActivityLogs { get; set; }
 }

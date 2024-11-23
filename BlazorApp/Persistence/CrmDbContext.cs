@@ -1,7 +1,5 @@
 using BlazorApp.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
-using Task = BlazorApp.Persistence.Entities.Task;
-
 namespace BlazorApp.Persistence;
 
 public class CrmDbContext : DbContext
@@ -31,7 +29,7 @@ public class CrmDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Company> Companies { get; set; }
     public DbSet<Campaign> Campaigns { get; set; }
-    public DbSet<Task> Tasks { get; set; }
+    public DbSet<PipelineTask> Tasks { get; set; }
     public DbSet<ContactComment> ContactComments { get; set; }
     public DbSet<PipelineComment> PipelineComments { get; set; }
     public DbSet<ActivityLog> ActivityLogs { get; set; }
