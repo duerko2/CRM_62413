@@ -27,7 +27,7 @@
                     <tr>
                         <td>@campaign.Id</td>
                         <td>@campaign.Name</td>
-                        <td>@campaign.Stages.Count</td>
+                        <td>@campaign.NumberOfStages</td>
                         <td>
                             <button class="btn btn-primary btn-sm" @onclick="() => NavigateToCampaignDetail(campaign.Id)">
                                 View Details
@@ -45,7 +45,7 @@
 </div>
 
 @code {
-    private List<Campaign> campaigns;
+    private List<CampaignListRow> campaigns;
 
     protected override void OnInitialized()
     {

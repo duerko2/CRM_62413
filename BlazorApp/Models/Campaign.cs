@@ -1,14 +1,9 @@
-﻿// Models/Campaign.cs
-using System.Collections.Generic;
-
-namespace BlazorApp.Models
+﻿namespace BlazorApp.Models
 {
-    public class Campaign
+    public class CampaignModel
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public List<string> Stages { get; set; } = new List<string>();
-        public List<bool> RequireMasterTask { get; set; } = new List<bool>();
-        public List<string> MasterTaskDescriptions { get; set; } = new List<string>();
+        public List<CampaignStageModel> Stages { get; set; } = new List<CampaignStageModel>();
     }
 }

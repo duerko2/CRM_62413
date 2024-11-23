@@ -21,6 +21,12 @@ public class CrmDbContext : DbContext
             .WithMany(u => u.Contacts)
             .HasForeignKey(c => c.UserId)
             .OnDelete(DeleteBehavior.Restrict);  // Disable cascading delete on the User relationship
+
+        modelBuilder.Entity<Campaign>()
+            .HasMany(c => c.Stages)
+            .WithOne(s => s.Campaign)
+            .HasForeignKey(s => s.CampaignId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
     
     public DbSet<Contact> Contacts { get; set; }
@@ -29,6 +35,7 @@ public class CrmDbContext : DbContext
     public DbSet<User> Users { get; set; }
     public DbSet<Company> Companies { get; set; }
     public DbSet<Campaign> Campaigns { get; set; }
+    public DbSet<CampaignStage> CampaignStages { get; set; }
     public DbSet<PipelineTask> Tasks { get; set; }
     public DbSet<ContactComment> ContactComments { get; set; }
     public DbSet<PipelineComment> PipelineComments { get; set; }

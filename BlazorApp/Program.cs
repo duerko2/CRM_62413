@@ -16,6 +16,10 @@ internal class Program
         // Add services to the container.
         builder.Services.AddBlazoredLocalStorage();
 
+        builder.Services.AddServerSideBlazor()
+        .AddCircuitOptions(options => { options.DetailedErrors = true; });
+
+
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
         
@@ -35,14 +39,20 @@ internal class Program
         builder.Services.AddScoped<CommentService>();
         builder.Services.AddScoped<CampaignService>();
         builder.Services.AddScoped<PipelineService>();
-        builder.Services.AddScoped<CompanySettingsService>();
+        builder.Services.AddScoped<ContactService>();
+
 
 
         // Add repositories to the container. Use Scoped lifetime to make a new instance of the repository for each request.
         builder.Services.AddScoped<IContactRepository, ContactRepository>();
         builder.Services.AddScoped<ICommentRepository, EfCommentRepository>();
         builder.Services.AddScoped<IActivityLogRepository, EFActivityLogRepository>();
-        builder.Services.AddScoped<ICompanySettingsRepository, EFCompanySettingsRepository>();
+        builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
+
+
+
+
+
 
         // Add permissions class library
         builder.Services.AddSingleton<IUserAccessManager, UserAccessManager>();

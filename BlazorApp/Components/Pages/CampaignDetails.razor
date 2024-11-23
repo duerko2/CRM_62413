@@ -27,11 +27,12 @@
         <ul class="stage-list">
             @for (int i = 0; i < campaign.Stages.Count; i++)
             {
+                var stage = campaign.Stages[i];
                 <li class="stage-item">
-                    <h5>Stage @(i + 1): @campaign.Stages[i]</h5>
-                    @if (campaign.RequireMasterTask[i])
+                    <h5>Stage @(i + 1): @stage.Name</h5>
+                    @if (stage.RequireMasterTask)
                     {
-                        <p><strong>Master Task Description:</strong> @campaign.MasterTaskDescriptions[i]</p>
+                        <p><strong>Master Task Description:</strong> @stage.MasterTaskDescription</p>
                     }
                     else
                     {
@@ -69,18 +70,18 @@
         background-color: #ffffff;
     }
 
-    .stage-item h5 {
-        margin-bottom: 10px;
-        font-size: 18px;
-        color: #007bff;
-    }
+        .stage-item h5 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #007bff;
+        }
 </style>
 
 @code {
     [Parameter]
     public int campaignId { get; set; }
 
-    private Campaign campaign;
+    private CampaignModel campaign;
 
     protected override void OnInitialized()
     {

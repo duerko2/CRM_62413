@@ -52,8 +52,8 @@
 
 @code {
     private Pipeline newPipelineModel = new Pipeline();
-private List<ContactListRow> contacts = new List<ContactListRow>();
-    private List<Campaign> campaigns = new List<Campaign>();
+    private List<ContactListRow> contacts = new List<ContactListRow>();
+    private List<CampaignListRow> campaigns = new List<CampaignListRow>();
     private bool showErrorMessage = false;
 
     protected override async Task OnInitializedAsync()
@@ -97,29 +97,31 @@ private List<ContactListRow> contacts = new List<ContactListRow>();
         var selectedCampaign = CampaignService.GetCampaignById(newPipelineModel.CampaignId);
 
         // Set the pipeline stages from the campaign
-        newPipelineModel.PipelineStages = selectedCampaign.Stages;
+        newPipelineModel.PipelineStages = selectedCampaign.Stages.Select(s => s.Name).ToList();
 
-        // Set the master task requirements and descriptions from the campaign
-        newPipelineModel.RequireMasterTask = selectedCampaign.RequireMasterTask;
-        newPipelineModel.MasterTaskDescriptions = selectedCampaign.MasterTaskDescriptions;
+        // Set the master task requirements and descriptions from the campaign stages
+        newPipelineModel.RequireMasterTask = selectedCampaign.Stages.Select(s => s.RequireMasterTask).ToList();
+        newPipelineModel.MasterTaskDescriptions = selectedCampaign.Stages.Select(s => s.MasterTaskDescription).ToList();
 
-        // Initialize the active stage to the first stage
-        newPipelineModel.ActiveStage = selectedCampaign.Stages.First();
+        // Initialize the active stage to the name of the first stage
+        newPipelineModel.ActiveStage = selectedCampaign.Stages.First().Name;
 
         // Initialize master tasks for the pipeline
         for (int i = 0; i < selectedCampaign.Stages.Count; i++)
         {
-            if (selectedCampaign.RequireMasterTask[i])
+            var stage = selectedCampaign.Stages[i];
+
+            if (stage.RequireMasterTask)
             {
                 var masterTask = new TaskModel
                     {
                         Id = i + 1,
                         PipelineId = newPipelineModel.Id,
-                        Description = selectedCampaign.MasterTaskDescriptions[i],
+                        Description = stage.MasterTaskDescription,
                         CreatedDate = DateTime.Today,
                         Deadline = DateTime.Today.AddDays(7),
                         IsMasterTask = true,
-                        Stage = selectedCampaign.Stages[i]
+                        Stage = stage.Name
                     };
                 newPipelineModel.Tasks.Add(masterTask);
             }
@@ -131,4 +133,5 @@ private List<ContactListRow> contacts = new List<ContactListRow>();
         // Navigate to the Pipeline Details page for the newly assigned pipeline
         NavigationManager.NavigateTo($"/pipeline/{newPipelineModel.Id}");
     }
+
 }

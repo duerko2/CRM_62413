@@ -1,32 +1,41 @@
-﻿// Services/CampaignService.cs
-using BlazorApp.Models;
+﻿using BlazorApp.Models;
+using BlazorApp.Repository;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace BlazorApp.Services
 {
     public class CampaignService
     {
-        private List<Campaign> campaigns = new List<Campaign>();
+        private readonly ICampaignRepository _campaignRepository;
 
-        public List<Campaign> GetAllCampaigns()
+        public CampaignService(ICampaignRepository campaignRepository)
         {
-            return campaigns;
+            _campaignRepository = campaignRepository;
         }
 
-        public Campaign GetCampaignById(int id)
+        public List<CampaignListRow> GetAllCampaigns()
         {
-            return campaigns.FirstOrDefault(c => c.Id == id);
+            return _campaignRepository.GetAllCampaigns();
         }
 
-        public void AddCampaign(Campaign campaign)
+        public CampaignModel GetCampaignById(int id)
         {
-            campaigns.Add(campaign);
+            return _campaignRepository.GetCampaign(id);
         }
 
-        public int GetNextCampaignId()
+        public void AddCampaign(CampaignModel campaign)
         {
-            return campaigns.Any() ? campaigns.Max(c => c.Id) + 1 : 1;
+            _campaignRepository.AddCampaign(campaign);
+        }
+
+        public void UpdateCampaign(CampaignModel campaign)
+        {
+            _campaignRepository.UpdateCampaign(campaign);
+        }
+
+        public void DeleteCampaign(int id)
+        {
+            _campaignRepository.DeleteCampaign(id);
         }
     }
 }
