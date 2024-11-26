@@ -8,11 +8,11 @@ using BlazorApp.Services;
 using Contact = BlazorApp.Models.Contact;
 
 [TestFixture]  // Marks the class as a test fixture in NUnit
-public class NewContactServiceTests
+public class ContactServiceTests
 {
     private Mock<IContactRepository> _contactRepositoryMock;
     private Mock<IActivityLogRepository> _activityLogRepositoryMock;
-    private NewContactService _service;
+    private ContactService _service;
 
     [SetUp]  // SetUp runs before each test method
     public void SetUp()
@@ -21,7 +21,7 @@ public class NewContactServiceTests
         _activityLogRepositoryMock = new Mock<IActivityLogRepository>();
 
         // Instantiate the service with mocked dependencies
-        _service = new NewContactService(
+        _service = new ContactService(
             _contactRepositoryMock.Object,
             _activityLogRepositoryMock.Object
         );

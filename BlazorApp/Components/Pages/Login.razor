@@ -1,3 +1,4 @@
+@using System.Security
 @using BlazorApp.Services
 @page "/login"
 @inject AuthenticationStateProvider AuthStateProvider
@@ -46,7 +47,7 @@
         {
             if (AuthStateProvider is CustomAuthStateProvider customAuthProvider)
             {
-                await customAuthProvider.Login(loginModel.Username);
+                await customAuthProvider.Login(loginModel.Username, loginModel.Password);
                 Navigation.NavigateTo("/");
             }
         }  

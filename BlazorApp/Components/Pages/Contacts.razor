@@ -1,7 +1,9 @@
 ﻿@page "/contacts"
 @using System.Security.Claims
 @using BlazorApp.Models
-@inject Services.NewContactService NewContactService
+@using RolesAndPermissions
+@inject Services.ContactService ContactService
+@inject IPermissions Permissions;
 
 
 
@@ -30,6 +32,12 @@ else
                 <th @onclick="@(() => SortContacts(nameof(Contact.VAT)))">
                     VAT @SortIndicator(nameof(Contact.VAT))
                 </th>
+                @if(Permissions.HasPermission(AuthenticationStateTask.Result.User, "ViewAllContacts"))
+                {
+                    <th @onClick="@(() => SortContacts("SalesRep"))">
+                        Sales Rep @SortIndicator("SalesRep"))
+                    </th>
+                }
             </tr>
         </thead>
         <tbody>
@@ -44,6 +52,10 @@ else
                     <td>@contact.Type.ToString()</td>
                     <td>@contact.Company</td>
                     <td>@contact.VAT</td>
+                    @if(Permissions.HasPermission(AuthenticationStateTask.Result.User, "ViewAllContacts"))
+                    {
+                    <td>@contact.RepName</td>
+                    }
                 </tr>
             }
         </tbody>
@@ -82,14 +94,27 @@ else
             Console.WriteLine("User not found");
             return;
         }
-        await LoadContacts(userIdInt);
-    }
-
-    private async Task LoadContacts(int userId)
-    {
-        contacts = NewContactService.GetContacts(userId);
+        bool loadAllContacts = Permissions.HasPermission(user, "ViewAllContacts");
+        if (loadAllContacts)
+        {
+            await LoadAllContacts(userIdInt);
+        }
+        else if(Permissions.HasPermission(user, "ViewOwnContacts"))
+        {
+            await LoadContacts(userIdInt);
+        }
         SortContacts(currentSortColumn);
         StateHasChanged();
+    }
+
+    private async Task LoadAllContacts(int userId)
+    {
+        contacts = ContactService.GetContactsForCompany(userId);
+    }
+    
+    private async Task LoadContacts(int userId)
+    {
+        contacts = ContactService.GetContacts(userId);
     }
 
     private void SortContacts(string columnName)

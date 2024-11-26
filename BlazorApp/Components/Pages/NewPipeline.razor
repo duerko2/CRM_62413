@@ -3,7 +3,7 @@
 @using BlazorApp.Services
 @using System.Security.Claims
 @inject PipelineService PipelineService
-@inject NewContactService NewContactService
+@inject ContactService ContactService
 @inject CampaignService CampaignService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -67,7 +67,7 @@ private List<ContactListRow> contacts = new List<ContactListRow>();
             int userId = int.Parse(userIdClaim.Value);
 
             // Load contacts for dropdown selection from the database
-            contacts = NewContactService.GetContacts(userId);
+            contacts = ContactService.GetContacts(userId);
 
             // Load campaigns for dropdown selection
             campaigns = CampaignService.GetAllCampaigns();

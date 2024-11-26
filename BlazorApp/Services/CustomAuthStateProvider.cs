@@ -1,7 +1,10 @@
+using System.Security;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.JSInterop;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using BlazorApp.Persistence;
+using Microsoft.AspNetCore.Identity;
 
 namespace BlazorApp.Services;
 
@@ -10,15 +13,26 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
     private readonly IJSRuntime _jsRuntime;
     private readonly CrmDbContext _db;
     private readonly ClaimsPrincipal _anonymous = new ClaimsPrincipal(new ClaimsIdentity());
+    private ClaimsPrincipal _user;
 
     public CustomAuthStateProvider(IJSRuntime jsRuntime, CrmDbContext dbContext)
     {
         _db = dbContext;
         _jsRuntime = jsRuntime;
+        AuthenticationStateChanged += OnAuthenticationStateChanged;
+    }
+
+    private void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        var authState = task.Result;
+        _user = authState.User;
     }
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+        if (_user != default)
+            return new AuthenticationState(_user);
+        
         Console.WriteLine("Authenticating....");
         var userId = await GetUserIdAsync();
         var username = await GetUsernameAsync();
@@ -31,7 +45,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         var identity = new ClaimsIdentity(new[]
         {
             new Claim(ClaimTypes.Name, username),
-            new Claim(ClaimTypes.Role, "Administrator"),
+            new Claim(ClaimTypes.Role, "User"),
             new Claim(ClaimTypes.NameIdentifier, userId.ToString())
         }, "Fake authentication");
 
@@ -67,28 +81,45 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         }
     }
 
-    public async Task Login(string username)
+    public async Task Login(string username, string password)
     {
         try
         {
             // VERY Simple authentication
-            var dbUser = _db.Users.SingleOrDefault(u => u.Name == username);
-                
+            var dbUser = _db.Users.SingleOrDefault(u => u.UserName == username);
+            
             if (dbUser == null)
             {
                 throw new Exception("User not found");
             }
-                
-            // Authenticated! Stores the username and user ID in browser
-                
-            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "username", username);
-            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", "uid", dbUser.Id);
+            
+            // Retrieve salt from user
+            string userSalt = dbUser.Salt;
+            
+            // Salt the entered password
+            password += userSalt;
+            
+            // Hash the salted password            
+            var sha256 = SHA256.Create();
+            var passwordBytes = System.Text.Encoding.UTF8.GetBytes(password);
+            var hashedPassword = sha256.ComputeHash(passwordBytes);
+            var hashedPasswordString = Convert.ToBase64String(hashedPassword);
+            
+            // Compare the salted+hashed password with the stored value
+            string storedUserHashedPassword = dbUser.Password; 
+            if (hashedPasswordString != storedUserHashedPassword)
+            {
+                throw new Exception("Wrong password");
+            }
+
+            var role = dbUser.Role;
+            var userId = dbUser.Id;
 
             var identity = new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.Name, username),
-                new Claim(ClaimTypes.Role, "Administrator"),
-                new Claim(ClaimTypes.NameIdentifier, "1")
+                new Claim(ClaimTypes.Role, role),
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString())
             }, "Fake authentication");
 
             var user = new ClaimsPrincipal(identity);

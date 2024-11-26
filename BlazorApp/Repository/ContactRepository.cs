@@ -64,4 +64,28 @@ public class ContactRepository : IContactRepository
         _db.Contacts.Remove(contact);
         _db.SaveChanges();
     }
+
+    public int GetCompanyIdForUser(int userId)
+    {
+        var user = _db.Users.SingleOrDefault(u => u.Id == userId);
+        if (user == default)
+        {
+            throw new InvalidOperationException("User not found");
+        }
+        return user.CompanyId;
+    }
+
+    public List<ContactListRow> GetContactsForCompany(int companyId)
+    {
+        return _db.Contacts.Where(c => c.User.CompanyId == companyId).Select(c => 
+            new ContactListRow { 
+                Id = c.Id, 
+                Name = c.Name, 
+                Type = (ContactType)c.Type, 
+                Address = c.Address, 
+                Company = c.Company, 
+                RepName = c.User.Name,
+                VAT = c.VAT
+            }).ToList();
+    }
 }

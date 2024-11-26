@@ -2,7 +2,7 @@
 @using System.Security.Claims
 @using BlazorApp.Models
 @using BlazorApp.Services
-@inject NewContactService NewContactService
+@inject ContactService ContactService
 @inject CommentService CommentService
 @inject PipelineService PipelineService
 @inject NavigationManager NavigationManager
@@ -240,7 +240,7 @@
     protected override void OnInitialized()
     {
         // Fetch the contact data based on the Id parameter
-        contact = NewContactService.GetContactById(Id);
+        contact = ContactService.GetContactById(Id);
 
         if (contact == null)
         {
@@ -307,7 +307,7 @@
         var userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
         var userIdInt = int.Parse(userId);
 
-        NewContactService.SaveContact(contact, userIdInt);
+        ContactService.SaveContact(contact, userIdInt);
         message = "Contact saved successfully.";
         StartTimer();
         

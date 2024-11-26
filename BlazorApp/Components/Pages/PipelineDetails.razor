@@ -2,10 +2,9 @@
 @using BlazorApp.Models
 @using BlazorApp.Services
 @inject PipelineService PipelineService
-@inject ContactService ContactService
 @inject NavigationManager NavigationManager
 @inject CampaignService CampaignService 
-@inject NewContactService NewContactService
+@inject ContactService ContactService
 
 
 <PageTitle>@campaign?.Name ?? "Pipeline Detail"</PageTitle>
@@ -286,7 +285,7 @@
         Console.WriteLine($"Loaded Pipeline: ContactId = {pipeline.ContactId}, CampaignId = {pipeline.CampaignId}");
 
         // Use NewContactService to fetch the contact
-        contact = NewContactService.GetContactById(pipeline.ContactId);
+        contact = ContactService.GetContactById(pipeline.ContactId);
 
         if (contact == null)
         {

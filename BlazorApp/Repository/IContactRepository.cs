@@ -10,4 +10,6 @@ public interface IContactRepository
     public void AddContact(Contact contact);
     public void UpdateContact(Contact contact);
     public void DeleteContact(int id);
+    int GetCompanyIdForUser(int userId);
+    List<ContactListRow> GetContactsForCompany(int companyId);
 }

@@ -1,5 +1,7 @@
 ﻿@using BlazorApp.Services
+@using RolesAndPermissions
 @inject SideMenuService MenuService
+@inject IPermissions Permissions;
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -29,26 +31,26 @@
                     </NavLink>
                 </div>
 
-        @if (MenuService.IsContactsExpanded)
-        {
-            <ul class="sub-menu">
-                <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="newcontact">
-                        <span class="bi bi-person-plus-fill nav-menu-icon" aria-hidden="true"></span> New Contact
-                    </NavLink>
-                </li>
-                <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="leads">
-                        <span class="bi bi-person-plus-fill nav-menu-icon" aria-hidden="true"></span> Leads
-                    </NavLink>
-                </li>
-                <li class="nav-item px-3">
-                    <NavLink class="nav-link" href="customers">
-                        <span class="bi bi-person-check-fill nav-menu-icon" aria-hidden="true"></span> Customers
-                    </NavLink>
-                </li>
-            </ul>
-        }
+                @if (MenuService.IsContactsExpanded)
+                {
+                    <ul class="sub-menu">
+                        <li class="nav-item px-3">
+                            <NavLink class="nav-link" href="newcontact">
+                                <span class="bi bi-person-plus-fill nav-menu-icon" aria-hidden="true"></span> New Contact
+                            </NavLink>
+                        </li>
+                        <li class="nav-item px-3">
+                            <NavLink class="nav-link" href="leads">
+                                <span class="bi bi-person-plus-fill nav-menu-icon" aria-hidden="true"></span> Leads
+                            </NavLink>
+                        </li>
+                        <li class="nav-item px-3">
+                            <NavLink class="nav-link" href="customers">
+                                <span class="bi bi-person-check-fill nav-menu-icon" aria-hidden="true"></span> Customers
+                            </NavLink>
+                        </li>
+                    </ul>
+                }
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/campaigns">
@@ -73,11 +75,23 @@
                         <span class="bi bi-bar-chart-fill nav-menu-icon" aria-hidden="true"></span> New pipeline
                     </NavLink>
                 </div>
+                @if(Permissions.HasPermission(AuthenticationStateTask.Result.User, "EditCompany"))
+                {
+                    <div class="nav-item px-3">
+                        <NavLink class="nav-link" href="/company-settings">
+                            <span class="bi bi-person-fill nav-menu-icon" aria-hidden="true"></span> Company
+                        </NavLink>
+                    </div>
+                }
 
-        </Authorized>
+            </Authorized>
         </AuthorizeView>
     </nav>
 </div>
+
+@code{
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+}
 
 <style>
     .sub-menu {

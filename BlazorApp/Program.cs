@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using BlazorApp.Services;
 using Blazored.LocalStorage;
 using Microsoft.EntityFrameworkCore;
+using RolesAndPermissions;
 
 internal class Program
 {
@@ -24,24 +25,22 @@ internal class Program
 
         builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
         builder.Services.AddAuthorizationCore();
-        builder.Services.AddScoped<NewContactService>();
+        
+        // Add services to the container.
+        builder.Services.AddScoped<ContactService>();
         builder.Services.AddScoped<SideMenuService>();
         builder.Services.AddScoped<CommentService>();
-        builder.Services.AddSingleton<CampaignService>();
-        builder.Services.AddSingleton<PipelineService>();
-        builder.Services.AddSingleton<ContactService>();
+        builder.Services.AddScoped<CampaignService>();
+        builder.Services.AddScoped<PipelineService>();
 
 
-
+        // Add repositories to the container. Use Scoped lifetime to make a new instance of the repository for each request.
         builder.Services.AddScoped<IContactRepository, ContactRepository>();
         builder.Services.AddScoped<ICommentRepository, EfCommentRepository>();
         builder.Services.AddScoped<IActivityLogRepository, EFActivityLogRepository>();
 
-        
-        
-
-
-
+        // Add permissions class library
+        builder.Services.AddSingleton<IPermissions, Permissions>();
 
         var app = builder.Build();
         

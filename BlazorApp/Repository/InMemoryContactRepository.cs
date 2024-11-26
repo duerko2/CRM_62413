@@ -75,4 +75,14 @@ public class InMemoryContactRepository : IContactRepository
     {
         _contacts.RemoveAll(c => c.Id == id);
     }
+
+    public int GetCompanyIdForUser(int userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public List<ContactListRow> GetContactsForCompany(int companyId)
+    {
+        throw new NotImplementedException();
+    }
 }

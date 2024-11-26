@@ -1,0 +1,16 @@
+@page "/company-settings"
+@using RolesAndPermissions
+@inject IPermissions Permissions;
+
+@if(Permissions.HasPermission(AuthenticationStateTask.Result.User, "EditCompany"))
+{
+    <h3>CompanySettings</h3>
+}
+else
+{
+    <p>You do not have permission to view this page.</p>
+}
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+}

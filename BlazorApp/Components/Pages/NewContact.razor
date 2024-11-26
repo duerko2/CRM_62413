@@ -2,7 +2,7 @@
 @using BlazorApp.Models
 @using BlazorApp.Services
 @page "/newcontact"
-@inject NewContactService NewContactService
+@inject ContactService ContactService
 
 <h3 class="mb-4">Add Contact</h3>
 
@@ -157,7 +157,7 @@
         var userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
         var userIdInt = int.Parse(userId);
         
-        NewContactService.SaveContact(contact, userIdInt);
+        ContactService.SaveContact(contact, userIdInt);
         
         // Clear the form
         newContactModel = new NewContactModel();
