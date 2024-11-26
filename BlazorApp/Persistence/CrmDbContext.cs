@@ -33,4 +33,6 @@ public class CrmDbContext : DbContext
     public DbSet<ContactComment> ContactComments { get; set; }
     public DbSet<PipelineComment> PipelineComments { get; set; }
     public DbSet<ActivityLog> ActivityLogs { get; set; }
+    public DbSet<UserInvitation> UserInvitations { get; set; }
+    public DbSet<UserSession> UserSessions { get; set; }
 }

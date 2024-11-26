@@ -1,0 +1,36 @@
+@using System.Security.Claims
+@using BlazorApp.Models
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+
+<CascadingValue Value="UserContext">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    private Task<UserContext> UserContext { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateUserContext();
+        AuthenticationStateProvider.AuthenticationStateChanged += AuthenticationStateChanged;
+    }
+    private void AuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        // This will be triggered whenever the authentication state changes (e.g., after login/logout)
+        UpdateUserContext();
+    }
+    private async Task UpdateUserContext()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userContext = new UserContext();
+        userContext.User = user;
+        
+        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+        userContext.UserId = userIdClaim == null ? 0 : int.Parse(userIdClaim.Value);
+        UserContext = Task.FromResult(userContext);
+        StateHasChanged(); // Re-render the component
+    }
+}

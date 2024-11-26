@@ -4,6 +4,7 @@ using Microsoft.JSInterop;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using BlazorApp.Persistence;
+using BlazorApp.Persistence.Entities;
 using Microsoft.AspNetCore.Identity;
 
 namespace BlazorApp.Services;
@@ -14,6 +15,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
     private readonly CrmDbContext _db;
     private readonly ClaimsPrincipal _anonymous = new ClaimsPrincipal(new ClaimsIdentity());
     private ClaimsPrincipal _user;
+    private CancellationTokenSource cts;
 
     public CustomAuthStateProvider(IJSRuntime jsRuntime, CrmDbContext dbContext)
     {
@@ -30,62 +32,38 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        if (_user != default)
-            return new AuthenticationState(_user);
-        
-        Console.WriteLine("Authenticating....");
-        var userId = await GetUserIdAsync();
-        var username = await GetUsernameAsync();
-
-        if (!userId.HasValue)
+        if (_user == default)
         {
-            return new AuthenticationState(_anonymous);
+            cts = new CancellationTokenSource(1500);
+            var jsTask = _jsRuntime.InvokeAsync<string>("localStorage.getItem", cts.Token, "CRMToken");
+            var token = await jsTask;
+            if (token != null)
+            {
+                var dbUserSession = _db.UserSessions.SingleOrDefault(us => us.Token == token);
+                if (dbUserSession != null)
+                {
+                    var dbUser = _db.Users.SingleOrDefault(u => u.Id == dbUserSession.UserId);
+                    if (dbUser != null)
+                    {
+                        var identity = new ClaimsIdentity(new[]
+                        {
+                            new Claim(ClaimTypes.Name, dbUser.UserName),
+                            new Claim(ClaimTypes.Role, dbUser.Role),
+                            new Claim(ClaimTypes.NameIdentifier, dbUser.Id.ToString())
+                        }, "Authentication");
+                        _user = new ClaimsPrincipal(identity);
+                        return new AuthenticationState(_user);
+                    }
+                }
+            }
         }
-
-        var identity = new ClaimsIdentity(new[]
-        {
-            new Claim(ClaimTypes.Name, username),
-            new Claim(ClaimTypes.Role, "User"),
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString())
-        }, "Fake authentication");
-
-        var user = new ClaimsPrincipal(identity);
-        return new AuthenticationState(user);
-    }
-
-    private async Task<int?> GetUserIdAsync()
-    {
-        try
-        {
-            var id = await _jsRuntime.InvokeAsync<string?>("localStorage.getItem", "uid");
-            var idInt = Int32.Parse(id);
-            return idInt;
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine("Error fetching user ID: " + e.Message);
-            return null;
-        }
-    }
-
-    private async Task<string?> GetUsernameAsync()
-    {
-        try
-        {
-            return await _jsRuntime.InvokeAsync<string>("localStorage.getItem", "username");
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine("Error fetching username: " + e.Message);
-            return null;
-        }
+        return new AuthenticationState(_anonymous);
     }
 
     public async Task Login(string username, string password)
     {
         try
         {
-            // VERY Simple authentication
             var dbUser = _db.Users.SingleOrDefault(u => u.UserName == username);
             
             if (dbUser == null)
@@ -120,9 +98,20 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
                 new Claim(ClaimTypes.Name, username),
                 new Claim(ClaimTypes.Role, role),
                 new Claim(ClaimTypes.NameIdentifier, userId.ToString())
-            }, "Fake authentication");
+            }, "Authentication");
 
             var user = new ClaimsPrincipal(identity);
+            
+            Guid token = Guid.NewGuid();
+            _db.UserSessions.Add(new UserSession
+            {
+                UserId = userId,
+                Token = token.ToString(),
+                ExpirationDate = DateTime.Now.AddDays(1)
+            });
+            cts = new CancellationTokenSource(1500);
+            await _jsRuntime.InvokeVoidAsync("localStorage.setItem", cts.Token, "CRMToken", token);
+            _db.SaveChanges();
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
         }
         catch (Exception e)
@@ -135,8 +124,13 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
     {
         try
         {
-            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "username");
-            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", "uid");
+            cts = new CancellationTokenSource(1500);
+            var jsTask = _jsRuntime.InvokeAsync<string>("localStorage.getItem", cts.Token, "CRMToken");
+            var token = await jsTask;
+            var dbUserSession = _db.UserSessions.SingleOrDefault(us => us.Token == token);
+            _db.UserSessions.Remove(dbUserSession);
+            _db.SaveChanges();
+            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", cts.Token, "CRMToken");
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(_anonymous)));
         }
         catch (Exception e)

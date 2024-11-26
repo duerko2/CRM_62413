@@ -1,7 +1,7 @@
 ﻿@using BlazorApp.Services
 @using RolesAndPermissions
 @inject SideMenuService MenuService
-@inject IPermissions Permissions;
+@inject IUserAccessManager UserAccessManager;
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -75,7 +75,7 @@
                         <span class="bi bi-bar-chart-fill nav-menu-icon" aria-hidden="true"></span> New pipeline
                     </NavLink>
                 </div>
-                @if(Permissions.HasPermission(AuthenticationStateTask.Result.User, "EditCompany"))
+                @if(UserAccessManager.HasPermission(AuthenticationStateTask.Result.User, "EditCompany"))
                 {
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="/company-settings">

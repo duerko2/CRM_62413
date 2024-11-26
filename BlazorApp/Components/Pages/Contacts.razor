@@ -3,7 +3,7 @@
 @using BlazorApp.Models
 @using RolesAndPermissions
 @inject Services.ContactService ContactService
-@inject IPermissions Permissions;
+@inject IUserAccessManager UserAccessManager;
 
 
 
@@ -32,7 +32,7 @@ else
                 <th @onclick="@(() => SortContacts(nameof(Contact.VAT)))">
                     VAT @SortIndicator(nameof(Contact.VAT))
                 </th>
-                @if(Permissions.HasPermission(AuthenticationStateTask.Result.User, "ViewAllContacts"))
+                @if(UserAccessManager.HasPermission(AuthenticationStateTask.Result.User, "ViewAllContacts"))
                 {
                     <th @onClick="@(() => SortContacts("SalesRep"))">
                         Sales Rep @SortIndicator("SalesRep"))
@@ -52,7 +52,7 @@ else
                     <td>@contact.Type.ToString()</td>
                     <td>@contact.Company</td>
                     <td>@contact.VAT</td>
-                    @if(Permissions.HasPermission(AuthenticationStateTask.Result.User, "ViewAllContacts"))
+                    @if(UserAccessManager.HasPermission(AuthenticationStateTask.Result.User, "ViewAllContacts"))
                     {
                     <td>@contact.RepName</td>
                     }
@@ -94,12 +94,12 @@ else
             Console.WriteLine("User not found");
             return;
         }
-        bool loadAllContacts = Permissions.HasPermission(user, "ViewAllContacts");
+        bool loadAllContacts = UserAccessManager.HasPermission(user, "ViewAllContacts");
         if (loadAllContacts)
         {
             await LoadAllContacts(userIdInt);
         }
-        else if(Permissions.HasPermission(user, "ViewOwnContacts"))
+        else if(UserAccessManager.HasPermission(user, "ViewOwnContacts"))
         {
             await LoadContacts(userIdInt);
         }

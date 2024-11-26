@@ -19,6 +19,9 @@ internal class Program
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
         
+        builder.Services.AddDbContextFactory<CrmDbContext>(options =>
+            options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("Default Connection")));
+
         builder.Services.AddDbContext<CrmDbContext>(options =>
             options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("Default Connection")));
 
@@ -32,15 +35,17 @@ internal class Program
         builder.Services.AddScoped<CommentService>();
         builder.Services.AddScoped<CampaignService>();
         builder.Services.AddScoped<PipelineService>();
+        builder.Services.AddScoped<CompanySettingsService>();
 
 
         // Add repositories to the container. Use Scoped lifetime to make a new instance of the repository for each request.
         builder.Services.AddScoped<IContactRepository, ContactRepository>();
         builder.Services.AddScoped<ICommentRepository, EfCommentRepository>();
         builder.Services.AddScoped<IActivityLogRepository, EFActivityLogRepository>();
+        builder.Services.AddScoped<ICompanySettingsRepository, EFCompanySettingsRepository>();
 
         // Add permissions class library
-        builder.Services.AddSingleton<IPermissions, Permissions>();
+        builder.Services.AddSingleton<IUserAccessManager, UserAccessManager>();
 
         var app = builder.Build();
         

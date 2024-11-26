@@ -1,18 +1,33 @@
 @page "/company-settings"
 @using System.ComponentModel.DataAnnotations
+@using System.Security.Claims
+@using BlazorApp.Models
+@using BlazorApp.Services
 @using RolesAndPermissions
-@inject IPermissions Permissions;
+@inject IUserAccessManager UserAccessManager;
+@inject CompanySettingsService CompanySettingsService;
 
-@if(Permissions.HasPermission(AuthenticationStateTask.Result.User, "EditCompany"))
+@if(UserAccessManager.HasPermission(UserContext.Result.User, "EditCompany"))
 {
     <h3>CompanySettings</h3>
-    <EditForm Model="newUser" OnValidSubmit="HandleValidSubmit">
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <p style="color:red">@_errorMessage</p>
+    }
+    <EditForm Model="_newUser" OnValidSubmit="HandleValidSubmit">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
         <div>
-            <label for="username">Username:</label>
-            <InputText id="username" @bind-Value="newUser.Username" />
+            <label for="email">E-mail:</label>
+            <InputText id="email" @bind-Value="_newUser.Email" />
+        </div>
+        <div>
+            <label for="role">Role:</label>
+            <InputSelect id="role" @bind-Value="_newUser.Role">
+                <option value="Manager">Manager</option>
+                <option value="User">User</option>
+            </InputSelect>
         </div>
 
         <button type="submit" class="btn btn-primary">Add User</button>
@@ -24,28 +39,19 @@ else
 }
 
 @code {
-    private NewUserModel newUser = new NewUserModel();
+    private NewUser _newUser = new NewUser();
+    private string _errorMessage = "";
 
-    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
-
-    private async Task<bool> HasEditCompanyPermission()
-    {
-        var authState = await AuthenticationStateTask;
-        var user = authState.User;
-        return Permissions.HasPermission(user, "EditCompany");
-    }
-
+    [CascadingParameter] private Task<UserContext> UserContext { get; set; }
     private async Task HandleValidSubmit()
     {
-        // Logic to add the user to the company
-        Console.WriteLine($"Adding user: {newUser.Username}");
-
-        // TODO: Call your service to add the user to the database or perform other operations
-    }
-
-    public class NewUserModel
-    {
-        [Required(ErrorMessage = "Username is required")]
-        public string Username { get; set; }
+        try
+        {
+            CompanySettingsService.AddUserToCompany(_newUser, (await UserContext).UserId);
+        } catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        _newUser = new NewUser();
     }
 }

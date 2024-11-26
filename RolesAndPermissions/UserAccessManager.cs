@@ -2,7 +2,7 @@
 
 namespace RolesAndPermissions;
 
-public class Permissions : IPermissions
+public class UserAccessManager : IUserAccessManager
 {
     Roles _roles = new Roles();
     
