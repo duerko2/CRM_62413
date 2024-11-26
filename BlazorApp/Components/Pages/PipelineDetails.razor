@@ -66,14 +66,15 @@
                     <div class="task-item master-task">
                         <div class="task-item-content">
                             <p><strong>Master Task:</strong> @currentMasterTask.Description</p>
-                            <button class="@GetButtonClassForTask(currentMasterTask)" 
-                                    disabled="@taskCompletionStates[currentMasterTask]" 
-                                    @onclick="() => ToggleTaskComplete(currentMasterTask)">
-                                @(taskCompletionStates[currentMasterTask] ? "Completed" : "Complete")
-                            </button>
                         </div>
+                        <button class="@GetButtonClassForTask(currentMasterTask)"
+                                disabled="@taskCompletionStates[currentMasterTask]"
+                                @onclick="() => ToggleTaskComplete(currentMasterTask)">
+                            @(taskCompletionStates[currentMasterTask] ? "Completed" : "Complete")
+                        </button>
                     </div>
                 }
+
 
                 <!-- Regular Tasks -->
                 <div class="scrollable-tasks">
@@ -87,8 +88,8 @@
                                         <p><strong>Created:</strong> @($"{task.CreatedDate:dd/MM/yyyy}")</p>
                                         <p><strong>Deadline:</strong> @($"{task.Deadline:dd/MM/yyyy}")</p>
                                     </div>
-                                    <button class="@GetButtonClassForTask(task)" 
-                                            disabled="@(task.IsMasterTask && taskCompletionStates[task])" 
+                                    <button class="@GetButtonClassForTask(task)"
+                                            disabled="@(task.IsMasterTask && taskCompletionStates[task])"
                                             @onclick="() => ToggleTaskComplete(task)">
                                         @(taskCompletionStates[task] ? "Completed" : "Complete")
                                     </button>
@@ -98,6 +99,7 @@
                     </ul>
                 </div>
             </div>
+
 
             <!-- Add task column -->
             <div class="col-md-4 section-outline">
@@ -153,44 +155,49 @@
         background-color: #f8f9fa; /* Light background */
     }
 
-    /* Task item styles */
-    .task-list {
-        list-style-type: none;
-        padding: 0;
-    }
+            /* Task item styles */
+            .task-item {
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                background-color: #f8f9fa;
+                padding: 15px;
+                margin-bottom: 10px;
+                border-radius: 5px;
+                border: 1px solid #dee2e6;
+                word-wrap: break-word;
+            }
 
-    .task-item {
-        background-color: #f8f9fa;
-        padding: 15px;
-        margin-bottom: 10px;
-        border-radius: 5px;
-        border: 1px solid #dee2e6; /* Outline for individual tasks */
-        word-wrap: break-word; /* Allows long text to wrap within boundaries */
-        position: relative; /* Enables absolute positioning for button */
-    }
+                .task-item.master-task {
+                    border-left: 5px solid #ffc107;
+                    background-color: #fff3cd;
+                    border: 1px solid #ffc107;
+                }
 
-    .task-item.master-task {
-        border-left: 5px solid #ffc107; /* Yellow border to highlight */
-        background-color: #fff3cd; /* Light yellow background */
-        border: 1px solid #ffc107; /* Optional: yellow border for emphasis */
-    }
+            .task-item-content {
+                flex-grow: 1;
+            }
 
-    .task-description {
-        white-space: normal; /* Ensures text wraps to the next line */
-        overflow-wrap: break-word; /* Breaks long words to keep text within the container */
-    }
+            .task-description {
+                white-space: normal;
+                overflow-wrap: break-word;
+            }
 
-    /* Position the Complete button in the bottom-right corner */
-    .task-item button {
-        position: absolute;
-        bottom: 10px;
-        right: 10px;
-    }
+            .task-item button {
+                align-self: flex-end;
+                margin-top: 10px;
+            }
 
-    .task-item button.completed {
-        background-color: #28a745;
-        color: #fff;
-    }
+                .task-item button.completed {
+                    background-color: #28a745;
+                    color: #fff;
+                }
+
+                .task-item button.completed {
+                    background-color: #28a745;
+                    color: #fff;
+                }
+
 
     /* Scrollable tasks container */
     .scrollable-tasks {
