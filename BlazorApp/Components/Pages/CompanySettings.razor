@@ -1,10 +1,22 @@
 @page "/company-settings"
+@using System.ComponentModel.DataAnnotations
 @using RolesAndPermissions
 @inject IPermissions Permissions;
 
 @if(Permissions.HasPermission(AuthenticationStateTask.Result.User, "EditCompany"))
 {
     <h3>CompanySettings</h3>
+    <EditForm Model="newUser" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label for="username">Username:</label>
+            <InputText id="username" @bind-Value="newUser.Username" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Add User</button>
+    </EditForm>
 }
 else
 {
@@ -12,5 +24,28 @@ else
 }
 
 @code {
+    private NewUserModel newUser = new NewUserModel();
+
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    private async Task<bool> HasEditCompanyPermission()
+    {
+        var authState = await AuthenticationStateTask;
+        var user = authState.User;
+        return Permissions.HasPermission(user, "EditCompany");
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        // Logic to add the user to the company
+        Console.WriteLine($"Adding user: {newUser.Username}");
+
+        // TODO: Call your service to add the user to the database or perform other operations
+    }
+
+    public class NewUserModel
+    {
+        [Required(ErrorMessage = "Username is required")]
+        public string Username { get; set; }
+    }
 }
