@@ -212,7 +212,7 @@ namespace BlazorApp.Services
             foreach (var contact in sampleContacts)
             {
                 // Assign pipelines from PipelineService
-                contact.Pipelines = pipelineService.GetPipelinesByContactId(contact.Id);
+                //contact.Pipelines = pipelineService.GetPipelinesByContactId(contact.Id);
                 contact.Comments = GetSampleComments(contact.Id);
                 contact.Activities = GetSampleActivities(contact.Id);
             }

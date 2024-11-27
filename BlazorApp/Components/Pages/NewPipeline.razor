@@ -51,87 +51,64 @@
 </EditForm>
 
 @code {
-    private Pipeline newPipelineModel = new Pipeline();
+    private PipelineModel newPipelineModel = new PipelineModel();
     private List<ContactListRow> contacts = new List<ContactListRow>();
     private List<CampaignListRow> campaigns = new List<CampaignListRow>();
     private bool showErrorMessage = false;
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        // Obtain the current user's ID
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var authState = await AuthenticationStateTask;
         var user = authState.User;
-        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim != null)
-        {
-            int userId = int.Parse(userIdClaim.Value);
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier);
+        var userIdInt = userId == default ? default : int.Parse(userId.Value);
 
-            // Load contacts for dropdown selection from the database
-            contacts = ContactService.GetContacts(userId);
+        // Load contacts associated with the user
+        int userIdNum = int.Parse(userId.Value);
+        contacts = ContactService.GetContacts(userIdNum);
 
-            // Load campaigns for dropdown selection
-            campaigns = CampaignService.GetAllCampaigns();
-        }
-        else
-        {
-            // Handle case where user is not authenticated
-            NavigationManager.NavigateTo("/login");
-        }
+        // Load all campaigns
+        campaigns = CampaignService.GetAllCampaigns();
     }
 
     private void AssignPipeline()
     {
-        // Check if required fields are filled
         if (newPipelineModel.CampaignId == 0 || newPipelineModel.ContactId == 0)
         {
             showErrorMessage = true;
             return;
         }
 
-        System.Diagnostics.Debug.WriteLine($"Assigning pipeline: ContactId = {newPipelineModel.ContactId}, CampaignId = {newPipelineModel.CampaignId}");
-
-        // Assign a unique ID for the new pipeline
-        newPipelineModel.Id = PipelineService.GetNextPipelineId();
-
         // Get the selected campaign
         var selectedCampaign = CampaignService.GetCampaignById(newPipelineModel.CampaignId);
 
-        // Set the pipeline stages from the campaign
-        newPipelineModel.PipelineStages = selectedCampaign.Stages.Select(s => s.Name).ToList();
-
-        // Set the master task requirements and descriptions from the campaign stages
-        newPipelineModel.RequireMasterTask = selectedCampaign.Stages.Select(s => s.RequireMasterTask).ToList();
-        newPipelineModel.MasterTaskDescriptions = selectedCampaign.Stages.Select(s => s.MasterTaskDescription).ToList();
-
-        // Initialize the active stage to the name of the first stage
+        // Set active stage
         newPipelineModel.ActiveStage = selectedCampaign.Stages.First().Name;
 
-        // Initialize master tasks for the pipeline
-        for (int i = 0; i < selectedCampaign.Stages.Count; i++)
+        // Initialize master tasks
+        foreach (var stage in selectedCampaign.Stages)
         {
-            var stage = selectedCampaign.Stages[i];
-
             if (stage.RequireMasterTask)
             {
                 var masterTask = new TaskModel
-                    {
-                        Id = i + 1,
-                        PipelineId = newPipelineModel.Id,
-                        Description = stage.MasterTaskDescription,
-                        CreatedDate = DateTime.Today,
-                        Deadline = DateTime.Today.AddDays(7),
-                        IsMasterTask = true,
-                        Stage = stage.Name
-                    };
+                {
+                    PipelineId = newPipelineModel.Id,
+                    Description = stage.MasterTaskDescription,
+                    CreatedDate = DateTime.Today,
+                    Deadline = DateTime.Today.AddDays(7),
+                    IsMasterTask = true,
+                    Stage = stage.Name,
+                    IsCompleted = false
+                };
                 newPipelineModel.Tasks.Add(masterTask);
             }
         }
 
-        // Add the pipeline to the service
+        // Add the pipeline via the service
         PipelineService.AddPipeline(newPipelineModel);
 
-        // Navigate to the Pipeline Details page for the newly assigned pipeline
+        // Navigate to the Pipeline Details page
         NavigationManager.NavigateTo($"/pipeline/{newPipelineModel.Id}");
     }
-
 }

@@ -1,42 +1,56 @@
 ﻿using BlazorApp.Models;
-using System.Collections.Generic;
-using System.Linq;
+using BlazorApp.Repository;
 
 namespace BlazorApp.Services
 {
     public class PipelineService
     {
-            private List<Pipeline> pipelines = new List<Pipeline>();
+        private readonly IPipelineRepository _pipelineRepository;
 
-            public List<Pipeline> GetAllPipelines()
-            {
-                return pipelines;
-            }
-
-        public List<Pipeline> GetPipelinesByContactId(int contactId)
+        public PipelineService(IPipelineRepository pipelineRepository)
         {
-            return pipelines.Where(p => p.ContactId == contactId).ToList();
+            _pipelineRepository = pipelineRepository;
         }
 
-
-        public Pipeline GetPipelineById(int id)
-            {
-                return pipelines.FirstOrDefault(p => p.Id == id);
-            }
-
-            public void AddPipeline(Pipeline pipeline)
-            {
-                pipelines.Add(pipeline);
-            }
-
-            public int GetNextPipelineId()
-            {
-                return pipelines.Any() ? pipelines.Max(p => p.Id) + 1 : 1;
-            }
-
-            // Simulate fetching latest data
-            public LatestDataModel GetLatestData(int contactId, string pipelineStage)
+        public PipelineModel GetPipelineById(int id)
         {
+            return _pipelineRepository.GetPipeline(id);
+        }
+
+        public List<PipelineListRow> GetAllPipelines()
+        {
+            return _pipelineRepository.GetAllPipelines();
+        }
+
+        public void AddPipeline(PipelineModel pipeline)
+        {
+            _pipelineRepository.AddPipeline(pipeline);
+        }
+
+        public void UpdatePipeline(PipelineModel pipeline)
+        {
+            _pipelineRepository.UpdatePipeline(pipeline);
+        }
+
+        public void DeletePipeline(int id)
+        {
+            _pipelineRepository.DeletePipeline(id);
+        }
+
+        public void AddTask(TaskModel task)
+        {
+            _pipelineRepository.AddTask(task);
+        }
+
+        public void UpdateTask(TaskModel task)
+        {
+            _pipelineRepository.UpdateTask(task);
+        }
+
+        public LatestDataModel GetLatestData(int contactId, string pipelineStage)
+        {
+            // For now we use hardcoded data.
+
             if (pipelineStage == "Proposal")
             {
                 return new LatestDataModel
@@ -65,3 +79,4 @@ namespace BlazorApp.Services
         }
     }
 }
+

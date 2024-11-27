@@ -7,5 +7,7 @@ namespace BlazorApp.Persistence.Entities
 
         // Navigation property
         public virtual ICollection<CampaignStage> Stages { get; set; } // Make this virtual
+        public virtual ICollection<Pipeline> Pipelines { get; set; } = new List<Pipeline>();
+
     }
 }

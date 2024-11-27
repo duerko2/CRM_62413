@@ -27,11 +27,30 @@ public class CrmDbContext : DbContext
             .WithOne(s => s.Campaign)
             .HasForeignKey(s => s.CampaignId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Pipeline>()
+            .HasOne(p => p.Contact)
+            .WithMany(c => c.Pipelines)
+            .HasForeignKey(p => p.ContactId)
+            .OnDelete(DeleteBehavior.Restrict); // Prevent deletion of Contact if Pipelines exist
+
+        modelBuilder.Entity<Pipeline>()
+            .HasOne(p => p.Campaign)
+            .WithMany(c => c.Pipelines)
+            .HasForeignKey(p => p.CampaignId)
+            .OnDelete(DeleteBehavior.Restrict); // Prevent deletion of Campaign if Pipelines exist
+
+        modelBuilder.Entity<Pipeline>()
+            .HasMany(p => p.Tasks)
+            .WithOne(t => t.Pipeline)
+            .HasForeignKey(t => t.PipelineId)
+            .OnDelete(DeleteBehavior.Cascade); // Delete Tasks when Pipeline is deleted
     }
     
     public DbSet<Contact> Contacts { get; set; }
     public DbSet<Person> Persons { get; set; }
     public DbSet<Pipeline> Pipelines { get; set; }
+    public DbSet<PipelineTask> PipelineTasks { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Company> Companies { get; set; }
     public DbSet<Campaign> Campaigns { get; set; }

@@ -1,7 +1,4 @@
-﻿// Models/TaskModel.cs
-using System;
-
-namespace BlazorApp.Models
+﻿namespace BlazorApp.Models
 {
     public class TaskModel
     {
@@ -12,5 +9,6 @@ namespace BlazorApp.Models
         public DateTime Deadline { get; set; }
         public bool IsMasterTask { get; set; }
         public string Stage { get; set; }
+        public bool IsCompleted { get; set; }
     }
 }

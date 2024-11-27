@@ -48,6 +48,7 @@ internal class Program
         builder.Services.AddScoped<ICommentRepository, EfCommentRepository>();
         builder.Services.AddScoped<IActivityLogRepository, EFActivityLogRepository>();
         builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
+        builder.Services.AddScoped<IPipelineRepository, PipelineRepository>();
 
 
 

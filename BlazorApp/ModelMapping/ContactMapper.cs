@@ -3,7 +3,6 @@ using BlazorApp.Persistence.Entities;
 using Contact = BlazorApp.Models.Contact;
 using ContactComment = BlazorApp.Models.ContactComment;
 using Person = BlazorApp.Models.Person;
-using Pipeline = BlazorApp.Models.Pipeline;
 
 namespace BlazorApp.ModelMapping;
 
@@ -73,19 +72,23 @@ public class ContactMapper
         }).ToList();
     }
 
-    private static List<Pipeline> MapPipelinesToModel(Persistence.Entities.Contact entity)
+    private static List<PipelineModel> MapPipelinesToModel(Persistence.Entities.Contact entity)
     {
-        if(entity.Pipelines == null)
+        if (entity.Pipelines == null)
         {
-            return new List<Pipeline>();
+            return new List<PipelineModel>();
         }
-        return entity.Pipelines.Select(p => new Pipeline
+
+        return entity.Pipelines.Select(p => new PipelineModel
         {
             Id = p.Id,
-            CampaignId = p.CampaignId, 
-            ContactId = p.ContactId
+            CampaignId = p.CampaignId,
+            ContactId = p.ContactId,
+            ActiveStage = p.ActiveStage,
+            Tasks = p.Tasks != null ? p.Tasks.Select(TaskMapper.MapToModel).ToList() : new List<TaskModel>()
         }).ToList();
     }
+
 
     private static List<Person> MapPersonsToModel(ICollection<Persistence.Entities.Person> entityPersons)
     {

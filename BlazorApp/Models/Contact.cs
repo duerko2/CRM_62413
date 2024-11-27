@@ -14,7 +14,7 @@ namespace BlazorApp.Models
         public int UserId { get; set; }
         public ContactType Type { get; set; }
 
-        public List<Pipeline> Pipelines { get; set; }
+        public List<PipelineModel> Pipelines { get; set; }
         public List<ContactComment> Comments { get; set; }
         public List<Activity> Activities { get; set; }
 

@@ -27,9 +27,9 @@
 
         <!-- Pipeline status buttons displayed as a flow -->
         <div class="pipeline-status">
-            @for (int i = 0; i < pipeline.PipelineStages.Count; i++)
+            @for (int i = 0; i < pipelineStages.Count; i++)
             {
-                var stage = pipeline.PipelineStages[i];
+                var stage = pipelineStages[i];
 
                 <!-- Stage button -->
                 <button class="@GetButtonClass(stage) stage-button"
@@ -39,7 +39,7 @@
                 </button>
 
                 <!-- Arrow connector -->
-                @if (i < pipeline.PipelineStages.Count - 1)
+                @if (i < pipelineStages.Count - 1)
                 {
                     <div class="stage-connector">➔</div>
                 }
@@ -61,19 +61,20 @@
                 <h5>Tasks</h5>
 
                 <!-- Master Task for the current stage -->
-                @if (currentMasterTask != null)
-                {
-                    <div class="task-item master-task">
-                        <div class="task-item-content">
-                            <p><strong>Master Task:</strong> @currentMasterTask.Description</p>
-                        </div>
-                        <button class="@GetButtonClassForTask(currentMasterTask)"
-                                disabled="@taskCompletionStates[currentMasterTask]"
-                                @onclick="() => ToggleTaskComplete(currentMasterTask)">
-                            @(taskCompletionStates[currentMasterTask] ? "Completed" : "Complete")
-                        </button>
-                    </div>
-                }
+@if (currentMasterTask != null)
+{
+    <div class="task-item master-task">
+        <div class="task-item-content">
+            <p><strong>Master Task:</strong> @currentMasterTask.Description</p>
+        </div>
+        <button class="@GetButtonClassForTask(currentMasterTask)"
+                disabled="@currentMasterTask.IsCompleted"
+                @onclick="() => ToggleTaskComplete(currentMasterTask)">
+            @(currentMasterTask.IsCompleted ? "Completed" : "Complete")
+        </button>
+    </div>
+}
+
 
 
                 <!-- Regular Tasks -->
@@ -89,9 +90,9 @@
                                         <p><strong>Deadline:</strong> @($"{task.Deadline:dd/MM/yyyy}")</p>
                                     </div>
                                     <button class="@GetButtonClassForTask(task)"
-                                            disabled="@(task.IsMasterTask && taskCompletionStates[task])"
+                                            disabled="@(task.IsMasterTask && task.IsCompleted)"
                                             @onclick="() => ToggleTaskComplete(task)">
-                                        @(taskCompletionStates[task] ? "Completed" : "Complete")
+                                        @(task.IsCompleted ? "Completed" : "Complete")
                                     </button>
                                 </div>
                             </li>
@@ -255,24 +256,19 @@
 @code {
     [Parameter]
     public int pipelineId { get; set; }
-    public int Id { get; set; }
 
-    private Pipeline pipeline;
+    private PipelineModel pipeline;
     private Contact contact;
     private CampaignModel campaign;
+
+    private List<string> pipelineStages = new List<string>();
+    private Dictionary<string, bool> stageStates = new Dictionary<string, bool>();
 
     private LatestDataModel latestData = new LatestDataModel();
     private TaskModel currentMasterTask;
     private List<TaskModel> sortedTasks;
     private string notificationMessage = "";
 
-    // Track the active/inactive state of pipeline stages
-    private Dictionary<string, bool> stageStates = new Dictionary<string, bool>();
-
-    // Track the completion status of each task
-    private Dictionary<TaskModel, bool> taskCompletionStates = new Dictionary<TaskModel, bool>();
-
-    // New task fields
     private string newTaskDescription;
     private DateTime newTaskCreatedDate = DateTime.Today;
     private DateTime newTaskDeadline = DateTime.Today;
@@ -284,46 +280,23 @@
 
         if (pipeline == null)
         {
-            Console.WriteLine($"Pipeline with ID {pipelineId} not found.");
             NavigationManager.NavigateTo("/contacts");
             return;
         }
 
-        Console.WriteLine($"Loaded Pipeline: ContactId = {pipeline.ContactId}, CampaignId = {pipeline.CampaignId}");
-
-        // Use NewContactService to fetch the contact
+        // Get the contact
         contact = ContactService.GetContactById(pipeline.ContactId);
-
-        if (contact == null)
-        {
-            Console.WriteLine($"Contact with ID {pipeline.ContactId} not found.");
-            NavigationManager.NavigateTo("/contacts");
-            return;
-        }
 
         // Fetch the campaign data
         campaign = CampaignService.GetCampaignById(pipeline.CampaignId);
 
-        if (campaign == null)
-        {
-            Console.WriteLine($"Campaign with ID {pipeline.CampaignId} not found.");
-            NavigationManager.NavigateTo("/campaigns");
-            return;
-        }
+        // Initialize the stages
+        pipelineStages = campaign.Stages.Select(s => s.Name).ToList();
 
-        // Initialize latest data
-        latestData = PipelineService.GetLatestData(contact.Id, pipeline.ActiveStage);
-
-        // Initialize all pipeline stages
-        foreach (var stage in pipeline.PipelineStages)
+        // Initialize stage states
+        foreach (var stage in pipelineStages)
         {
             stageStates[stage] = stage == pipeline.ActiveStage;
-        }
-
-        // Initialize all tasks as incomplete
-        foreach (var task in pipeline.Tasks)
-        {
-            taskCompletionStates[task] = false;
         }
 
         UpdateTasks();
@@ -336,13 +309,10 @@
             .FirstOrDefault(t => t.IsMasterTask && t.Stage == pipeline.ActiveStage);
 
         // Filter and sort tasks:
-        // 1. Include completed master tasks from previous stages.
-        // 2. Exclude master tasks for future stages.
-        // 3. Sort by completion status, with incomplete tasks first.
         sortedTasks = pipeline.Tasks
-            .Where(t => !t.IsMasterTask || taskCompletionStates[t]) // Include only completed master tasks or regular tasks
-            .OrderBy(t => taskCompletionStates[t]) // Incomplete tasks first
-            .ThenBy(t => t.IsMasterTask) // Master tasks appear above regular tasks
+            .Where(t => !t.IsMasterTask || t.IsCompleted)
+            .OrderBy(t => t.IsCompleted)
+            .ThenBy(t => t.IsMasterTask)
             .ToList();
     }
 
@@ -354,7 +324,7 @@
     private void ToggleStage(string stage)
     {
         // Prevent moving to the next stage if the master task is not completed
-        if (currentMasterTask != null && !taskCompletionStates[currentMasterTask] && stage != pipeline.ActiveStage)
+        if (currentMasterTask != null && !currentMasterTask.IsCompleted && stage != pipeline.ActiveStage)
         {
             return;
         }
@@ -368,9 +338,14 @@
             stageStates[key] = key == stage;
         }
 
+        // Update latest data
+        latestData = PipelineService.GetLatestData(contact.Id, pipeline.ActiveStage);
+
+        // Update the pipeline in the database
+        PipelineService.UpdatePipeline(pipeline);
+
         UpdateTasks();
     }
-
 
     private string GetButtonClass(string stage)
     {
@@ -378,7 +353,7 @@
         {
             return "active";
         }
-        else if (pipeline.PipelineStages.IndexOf(stage) < pipeline.PipelineStages.IndexOf(pipeline.ActiveStage))
+        else if (pipelineStages.IndexOf(stage) < pipelineStages.IndexOf(pipeline.ActiveStage))
         {
             return "completed";
         }
@@ -390,13 +365,17 @@
 
     private void ToggleTaskComplete(TaskModel task)
     {
-        if (task.IsMasterTask && taskCompletionStates[task])
+        if (task.IsMasterTask && task.IsCompleted)
         {
             // Prevent toggling master tasks back once completed
             return;
         }
 
-        taskCompletionStates[task] = !taskCompletionStates[task];
+        task.IsCompleted = !task.IsCompleted;
+
+        // Update the task in the database
+        PipelineService.UpdateTask(task);
+
         UpdateTasks();
     }
 
@@ -404,15 +383,15 @@
     {
         if (stage == pipeline.ActiveStage) return false;
 
-        var currentIndex = pipeline.PipelineStages.IndexOf(pipeline.ActiveStage);
-        var targetIndex = pipeline.PipelineStages.IndexOf(stage);
+        var currentIndex = pipelineStages.IndexOf(pipeline.ActiveStage);
+        var targetIndex = pipelineStages.IndexOf(stage);
 
         return currentIndex + 1 != targetIndex;
     }
 
     private string GetButtonClassForTask(TaskModel task)
     {
-        return taskCompletionStates[task] ? "btn btn-success completed" : "btn btn-primary";
+        return task.IsCompleted ? "btn btn-success completed" : "btn btn-primary";
     }
 
     private void AddTask()
@@ -420,19 +399,21 @@
         if (!string.IsNullOrWhiteSpace(newTaskDescription))
         {
             var newTask = new TaskModel
-                {
-                    Id = pipeline.Tasks.Any() ? pipeline.Tasks.Max(t => t.Id) + 1 : 1,
-                    PipelineId = pipelineId,
-                    Description = newTaskDescription,
-                    CreatedDate = newTaskCreatedDate,
-                    Deadline = newTaskDeadline
-                };
+            {
+                PipelineId = pipelineId,
+                Description = newTaskDescription,
+                CreatedDate = newTaskCreatedDate,
+                Deadline = newTaskDeadline,
+                IsMasterTask = false,
+                IsCompleted = false,
+                Stage = pipeline.ActiveStage // Setting the Stage property
+            };
 
             // Add the new task to the pipeline's task list
             pipeline.Tasks.Add(newTask);
 
-            // Add the task to taskCompletionStates with an initial state (false for incomplete)
-            taskCompletionStates[newTask] = false;
+            // Save the new task to the database
+            PipelineService.AddTask(newTask);
 
             // Clear form fields after adding the task
             newTaskDescription = string.Empty;
@@ -443,10 +424,9 @@
         }
     }
 
-
     private void TryToggleStage(string stage, int stageIndex)
     {
-        if (currentMasterTask != null && !taskCompletionStates[currentMasterTask])
+        if (currentMasterTask != null && !currentMasterTask.IsCompleted)
         {
             // Notify the user if the master task is not completed
             notificationMessage = "Complete the master task for this stage before proceeding.";
