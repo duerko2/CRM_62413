@@ -1,10 +1,7 @@
 ﻿@page "/newpipeline"
 @using BlazorApp.Models
 @using BlazorApp.Services
-@using System.Security.Claims
 @inject PipelineService PipelineService
-@inject ContactService ContactService
-@inject CampaignService CampaignService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -52,63 +49,33 @@
 
 @code {
     private PipelineModel newPipelineModel = new PipelineModel();
-    private List<ContactListRow> contacts = new List<ContactListRow>();
-    private List<CampaignListRow> campaigns = new List<CampaignListRow>();
+    private List<ContactListRow> contacts = new();
+    private List<CampaignListRow> campaigns = new();
     private bool showErrorMessage = false;
+
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateTask;
         var user = authState.User;
-        var userId = user.FindFirst(ClaimTypes.NameIdentifier);
-        var userIdInt = userId == default ? default : int.Parse(userId.Value);
+        var userId = int.Parse(user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
 
-        // Load contacts associated with the user
-        int userIdNum = int.Parse(userId.Value);
-        contacts = ContactService.GetContacts(userIdNum);
-
-        // Load all campaigns
-        campaigns = CampaignService.GetAllCampaigns();
+        // Fetch data through service
+        contacts = PipelineService.GetContactsForUser(userId);
+        campaigns = PipelineService.GetAllCampaigns();
     }
 
-    private void AssignPipeline()
+    private async Task AssignPipeline()
     {
-        if (newPipelineModel.CampaignId == 0 || newPipelineModel.ContactId == 0)
+        try
+        {
+            var pipelineId = await PipelineService.CreateNewPipeline(newPipelineModel);
+            NavigationManager.NavigateTo($"/pipeline/{pipelineId}");
+        }
+        catch (Exception ex)
         {
             showErrorMessage = true;
-            return;
         }
-
-        // Get the selected campaign
-        var selectedCampaign = CampaignService.GetCampaignById(newPipelineModel.CampaignId);
-
-        // Set active stage
-        newPipelineModel.ActiveStage = selectedCampaign.Stages.First().Name;
-
-        // Initialize master tasks
-        foreach (var stage in selectedCampaign.Stages)
-        {
-            if (stage.RequireMasterTask)
-            {
-                var masterTask = new TaskModel
-                {
-                    PipelineId = newPipelineModel.Id,
-                    Description = stage.MasterTaskDescription,
-                    CreatedDate = DateTime.Today,
-                    Deadline = DateTime.Today.AddDays(7),
-                    IsMasterTask = true,
-                    Stage = stage.Name,
-                    IsCompleted = false
-                };
-                newPipelineModel.Tasks.Add(masterTask);
-            }
-        }
-
-        // Add the pipeline via the service
-        PipelineService.AddPipeline(newPipelineModel);
-
-        // Navigate to the Pipeline Details page
-        NavigationManager.NavigateTo($"/pipeline/{newPipelineModel.Id}");
     }
 }

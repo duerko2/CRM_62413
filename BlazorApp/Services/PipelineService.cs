@@ -6,11 +6,57 @@ namespace BlazorApp.Services
     public class PipelineService
     {
         private readonly IPipelineRepository _pipelineRepository;
+        private readonly ContactService _contactService;
+        private readonly CampaignService _campaignService;
 
-        public PipelineService(IPipelineRepository pipelineRepository)
+        public PipelineService(IPipelineRepository pipelineRepository, ContactService contactService, CampaignService campaignService)
         {
             _pipelineRepository = pipelineRepository;
+            _contactService = contactService;
+            _campaignService = campaignService;
         }
+
+        public List<ContactListRow> GetContactsForUser(int userId)
+        {
+            return _contactService.GetContacts(userId); // Delegated to ContactService
+        }
+
+        public List<CampaignListRow> GetAllCampaigns()
+        {
+            return _campaignService.GetAllCampaigns(); // Delegated to CampaignService
+        }
+
+        public async Task<int> CreateNewPipeline(PipelineModel pipeline)
+        {
+            if (pipeline.CampaignId == 0 || pipeline.ContactId == 0)
+            {
+                throw new ArgumentException("Invalid Campaign or Contact selection.");
+            }
+
+            // Fetch Campaign Details
+            var campaign = _campaignService.GetCampaignById(pipeline.CampaignId);
+            if (campaign == null) throw new Exception("Selected campaign not found.");
+
+            // Initialize the pipeline's active stage and master tasks
+            pipeline.ActiveStage = campaign.Stages.First().Name;
+            pipeline.Tasks = campaign.Stages
+                .Where(s => s.RequireMasterTask)
+                .Select(stage => new TaskModel
+                {
+                    Description = stage.MasterTaskDescription,
+                    CreatedDate = DateTime.Today,
+                    Deadline = DateTime.Today.AddDays(7),
+                    IsMasterTask = true,
+                    Stage = stage.Name,
+                    IsCompleted = false
+                }).ToList();
+
+            // Add pipeline to database
+            _pipelineRepository.AddPipeline(pipeline);
+
+            return pipeline.Id;
+        }
+
 
         public PipelineModel GetPipelineById(int id)
         {
