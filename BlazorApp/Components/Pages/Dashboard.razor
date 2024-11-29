@@ -1,0 +1,16 @@
+<Funnel FunnelData="funnelData" />
+<TasksList/>
+
+@code {
+    private FunnelView funnelData = new FunnelView
+    {
+        CampaignName = "Spring Campaign",
+        Stages = new List<FunnelViewStage>
+        {
+            new FunnelViewStage { StageName = "Awareness", Count = 150 },
+            new FunnelViewStage { StageName = "Interest", Count = 90 },
+            new FunnelViewStage { StageName = "Decision", Count = 30 },
+            new FunnelViewStage { StageName = "Action", Count = 10 },
+        }
+    };
+}

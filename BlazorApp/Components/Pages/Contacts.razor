@@ -83,7 +83,7 @@ else
     private bool ascending = true;
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
-    protected override async void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         var authState = await AuthenticationStateTask;
         var user = authState.User;

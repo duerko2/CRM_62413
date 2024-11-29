@@ -7,16 +7,17 @@ namespace BlazorApp.Repository
 {
     public class PipelineRepository : IPipelineRepository
     {
-        private readonly CrmDbContext _dbContext;
+        private readonly IDbContextFactory<CrmDbContext> _contextFactory;
 
-        public PipelineRepository(CrmDbContext dbContext)
+        public PipelineRepository(IDbContextFactory<CrmDbContext> contextFactory)
         {
-            _dbContext = dbContext;
+            _contextFactory = contextFactory;
         }
 
         public PipelineModel GetPipeline(int id)
         {
-            var pipelineEntity = _dbContext.Pipelines
+            using CrmDbContext db = _contextFactory.CreateDbContext();
+            var pipelineEntity = db.Pipelines
                 .Include(p => p.Tasks)
                 .FirstOrDefault(p => p.Id == id);
 
@@ -25,7 +26,8 @@ namespace BlazorApp.Repository
 
         public List<PipelineListRow> GetAllPipelines()
         {
-            return _dbContext.Pipelines
+            using CrmDbContext db = _contextFactory.CreateDbContext();
+            return db.Pipelines
                 .Include(p => p.Contact)
                 .Include(p => p.Campaign)
                 .Select(p => new PipelineListRow
@@ -40,16 +42,18 @@ namespace BlazorApp.Repository
 
         public void AddPipeline(PipelineModel pipeline)
         {
+            using CrmDbContext db = _contextFactory.CreateDbContext();
             var entity = PipelineMapper.MapToEntity(pipeline);
-            _dbContext.Pipelines.Add(entity);
-            _dbContext.SaveChanges();
+            db.Pipelines.Add(entity);
+            db.SaveChanges();
             pipeline.Id = entity.Id; // Update the model with the generated ID
         }
 
         public void UpdatePipeline(PipelineModel pipeline)
         {
+            using CrmDbContext db = _contextFactory.CreateDbContext();
             // Retrieve the existing entity from the database
-            var existingEntity = _dbContext.Pipelines
+            var existingEntity = db.Pipelines
                 .Include(p => p.Tasks)
                 .FirstOrDefault(p => p.Id == pipeline.Id);
 
@@ -60,7 +64,7 @@ namespace BlazorApp.Repository
                 // Update other properties as needed
 
                 // Save changes
-                _dbContext.SaveChanges();
+                db.SaveChanges();
             }
             else
             {
@@ -70,30 +74,33 @@ namespace BlazorApp.Repository
 
         public void DeletePipeline(int id)
         {
-            var pipeline = _dbContext.Pipelines.Find(id);
+            using CrmDbContext db = _contextFactory.CreateDbContext();
+            var pipeline = db.Pipelines.Find(id);
             if (pipeline != null)
             {
-                _dbContext.Pipelines.Remove(pipeline);
-                _dbContext.SaveChanges();
+                db.Pipelines.Remove(pipeline);
+                db.SaveChanges();
             }
         }
 
         public void AddTask(TaskModel task)
         {
+            using CrmDbContext db = _contextFactory.CreateDbContext();
             var entity = TaskMapper.MapToEntity(task);
-            _dbContext.PipelineTasks.Add(entity);
-            _dbContext.SaveChanges();
+            db.PipelineTasks.Add(entity);
+            db.SaveChanges();
             task.Id = entity.Id; // Update task ID
         }
 
         public void UpdateTask(TaskModel task)
         {
-            var existingEntity = _dbContext.PipelineTasks.FirstOrDefault(t => t.Id == task.Id);
+            using CrmDbContext db = _contextFactory.CreateDbContext();
+            var existingEntity = db.PipelineTasks.FirstOrDefault(t => t.Id == task.Id);
 
             if (existingEntity != null)
             {
                 TaskMapper.MapToExistingEntity(task, existingEntity);
-                _dbContext.SaveChanges();
+                db.SaveChanges();
             }
             else
             {

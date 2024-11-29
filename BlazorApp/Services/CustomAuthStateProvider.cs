@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using BlazorApp.Persistence;
 using BlazorApp.Persistence.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Data.SqlClient;
 
 namespace BlazorApp.Services;
 
@@ -32,32 +33,41 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        if (_user == default)
+        try
         {
-            cts = new CancellationTokenSource(1500);
-            var jsTask = _jsRuntime.InvokeAsync<string>("localStorage.getItem", cts.Token, "CRMToken");
-            var token = await jsTask;
-            if (token != null)
+
+            if (_user == default)
             {
-                var dbUserSession = _db.UserSessions.SingleOrDefault(us => us.Token == token);
-                if (dbUserSession != null)
+                cts = new CancellationTokenSource(1500);
+                var jsTask = _jsRuntime.InvokeAsync<string>("localStorage.getItem", cts.Token, "CRMToken");
+                var token = await jsTask;
+                if (token != null)
                 {
-                    var dbUser = _db.Users.SingleOrDefault(u => u.Id == dbUserSession.UserId);
-                    if (dbUser != null)
+                    var dbUserSession = _db.UserSessions.SingleOrDefault(us => us.Token == token);
+                    if (dbUserSession != null)
                     {
-                        var identity = new ClaimsIdentity(new[]
+                        var dbUser = _db.Users.SingleOrDefault(u => u.Id == dbUserSession.UserId);
+                        if (dbUser != null)
                         {
-                            new Claim(ClaimTypes.Name, dbUser.UserName),
-                            new Claim(ClaimTypes.Role, dbUser.Role),
-                            new Claim(ClaimTypes.NameIdentifier, dbUser.Id.ToString())
-                        }, "Authentication");
-                        _user = new ClaimsPrincipal(identity);
-                        return new AuthenticationState(_user);
+                            var identity = new ClaimsIdentity(new[]
+                            {
+                                new Claim(ClaimTypes.Name, dbUser.UserName),
+                                new Claim(ClaimTypes.Role, dbUser.Role),
+                                new Claim(ClaimTypes.NameIdentifier, dbUser.Id.ToString())
+                            }, "Authentication");
+                            _user = new ClaimsPrincipal(identity);
+                            return new AuthenticationState(_user);
+                        }
                     }
                 }
             }
+
+            return new AuthenticationState(_anonymous);
         }
-        return new AuthenticationState(_anonymous);
+        catch (SqlException e)
+        {
+            throw new Exception("Error during authentication: " + "" + "Try again in 30 seconds");
+        }
     }
 
     public async Task Login(string username, string password)

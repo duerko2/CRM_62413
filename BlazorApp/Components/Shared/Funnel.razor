@@ -1,0 +1,62 @@
+@using BlazorApp.Models
+
+<div class="container text-center mt-4">
+    <h2>@FunnelData.CampaignName</h2>
+    <div class="mr-6 funnel-container">
+        @for (int i = 0; i < FunnelData.Stages.Count; i++)
+        {
+        var stage = FunnelData.Stages[i];
+        var leftWidth = 100 - (i * 15); 
+        var rightWidth = 100 - ((i + 1) * 15); 
+        <div class="funnel-stage text-white"
+             style="height: 100%; clip-path: polygon(0% @(50 - leftWidth / 2)%, 100% @(50 - rightWidth / 2)%, 100% @(50 + rightWidth / 2)%, 0% @(50 + leftWidth / 2)%); background-color: @GetStageColor(i);">
+            <div class="funnel-content">
+                <span class="fw-bold">@stage.StageName</span>
+                <span>@stage.Count</span>
+            </div>
+        </div>
+        }
+    </div>
+</div>
+
+<style>
+    .funnel-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        height: 300px;
+    }
+
+    .funnel-stage {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 6px; 
+    }
+
+    .funnel-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    h2 {
+        margin-bottom: 20px;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public FunnelView FunnelData { get; set; }
+    private string GetStageColor(int index)
+    {
+        // Define stage colors
+        var colors = new[] { "#007bff", "#6c757d", "#28a745", "#ffc107", "#dc3545" };
+        return colors[index % colors.Length];
+    }
+}

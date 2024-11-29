@@ -4,10 +4,16 @@
 
 
 <CascadingValue Value="UserContext">
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+    <p style="color:red">@_errorMessage</p>
+    }
     @ChildContent
 </CascadingValue>
 
 @code {
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+    private string _errorMessage;
     [Parameter] public RenderFragment ChildContent { get; set; }
     private Task<UserContext> UserContext { get; set; }
 
@@ -23,14 +29,21 @@
     }
     private async Task UpdateUserContext()
     {
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        var userContext = new UserContext();
-        userContext.User = user;
+        try
+        {
+            var authState = await AuthenticationStateTask;
+            var user = authState.User;
+            var userContext = new UserContext();
+            userContext.User = user;
         
-        var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
-        userContext.UserId = userIdClaim == null ? 0 : int.Parse(userIdClaim.Value);
-        UserContext = Task.FromResult(userContext);
-        StateHasChanged(); // Re-render the component
+            var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
+            userContext.UserId = userIdClaim == null ? 0 : int.Parse(userIdClaim.Value);
+            UserContext = Task.FromResult(userContext);
+            StateHasChanged(); // Re-render the component
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
     }
 }
