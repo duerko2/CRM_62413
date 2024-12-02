@@ -59,7 +59,7 @@ namespace BlazorApp.Repository
 
             if (existingEntity != null)
             {
-                // Update scalar properties
+                // Update properties
                 existingEntity.ActiveStage = pipeline.ActiveStage;
                 // Update other properties as needed
 
@@ -106,6 +106,12 @@ namespace BlazorApp.Repository
             {
                 throw new Exception($"Task with Id {task.Id} not found.");
             }
+        }
+
+        public TaskModel GetTaskById(int taskId)
+        {
+            var taskEntity = _dbContext.PipelineTasks.FirstOrDefault(t => t.Id == taskId);
+            return TaskMapper.MapToModel(taskEntity);
         }
     }
 }

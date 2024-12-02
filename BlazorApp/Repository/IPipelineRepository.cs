@@ -12,5 +12,6 @@ namespace BlazorApp.Repository
 
         void AddTask(TaskModel task);
         void UpdateTask(TaskModel task);
+        TaskModel GetTaskById(int taskId);
     }
 }

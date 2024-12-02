@@ -57,6 +57,80 @@ namespace BlazorApp.Services
             return pipeline.Id;
         }
 
+        public async Task<PipelineDetailModel> GetPipelineDetailsAsync(int pipelineId)
+        {
+            var pipeline = _pipelineRepository.GetPipeline(pipelineId);
+            if (pipeline == null) throw new Exception($"Pipeline with Id {pipelineId} not found.");
+
+            // Delegate to existing services
+            var campaign = _campaignService.GetCampaignById(pipeline.CampaignId);
+            var contact = _contactService.GetContactById(pipeline.ContactId);
+
+            return new PipelineDetailModel
+            {
+                Id = pipeline.Id,
+                ActiveStage = pipeline.ActiveStage,
+                Stages = campaign.Stages.Select(s => s.Name).ToList(), // Convert to List<string>
+                Tasks = pipeline.Tasks,
+                CurrentMasterTask = pipeline.Tasks.FirstOrDefault(t => t.IsMasterTask && t.Stage == pipeline.ActiveStage && !t.IsCompleted),
+                SortedTasks = pipeline.Tasks
+                    .OrderBy(t => t.IsCompleted)
+                    .ThenBy(t => t.IsMasterTask)
+                    .ToList(),
+                CampaignName = campaign.Name,
+                ContactName = contact.Name,
+                ContactId = contact.Id,
+                LatestData = GetLatestData(contact.Id, pipeline.ActiveStage)
+            };
+        }
+
+        public async Task ToggleStageAsync(int pipelineId, string targetStage)
+        {
+            var pipeline = _pipelineRepository.GetPipeline(pipelineId);
+            if (pipeline == null) throw new Exception($"Pipeline with Id {pipelineId} not found.");
+
+            var currentMasterTask = pipeline.Tasks
+                .FirstOrDefault(t => t.IsMasterTask && t.Stage == pipeline.ActiveStage);
+
+            if (currentMasterTask != null && !currentMasterTask.IsCompleted && targetStage != pipeline.ActiveStage)
+            {
+                throw new Exception("Complete the master task for the current stage before proceeding.");
+            }
+
+            pipeline.ActiveStage = targetStage;
+            _pipelineRepository.UpdatePipeline(pipeline);
+        }
+
+        public async Task ToggleTaskCompleteAsync(TaskModel task)
+        {
+            // Retrieve the task from the repository to ensure we have the latest data
+            var existingTask = _pipelineRepository.GetTaskById(task.Id);
+            if (existingTask == null)
+            {
+                throw new Exception("Task not found.");
+            }
+            existingTask.IsCompleted = !existingTask.IsCompleted;
+            _pipelineRepository.UpdateTask(existingTask);
+        }
+
+        public async Task AddTaskAsync(string description, DateTime createdDate, DateTime deadline, int pipelineId)
+        {
+            var pipeline = _pipelineRepository.GetPipeline(pipelineId);
+            if (pipeline == null) throw new Exception($"Pipeline with Id {pipelineId} not found.");
+
+            var newTask = new TaskModel
+            {
+                PipelineId = pipelineId,
+                Description = description,
+                CreatedDate = createdDate,
+                Deadline = deadline,
+                IsMasterTask = false,
+                IsCompleted = false,
+                Stage = pipeline.ActiveStage
+            };
+
+            _pipelineRepository.AddTask(newTask);
+        }
 
         public PipelineModel GetPipelineById(int id)
         {
@@ -125,4 +199,3 @@ namespace BlazorApp.Services
         }
     }
 }
-
