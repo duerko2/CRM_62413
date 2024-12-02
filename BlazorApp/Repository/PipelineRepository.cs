@@ -110,7 +110,8 @@ namespace BlazorApp.Repository
 
         public TaskModel GetTaskById(int taskId)
         {
-            var taskEntity = _dbContext.PipelineTasks.FirstOrDefault(t => t.Id == taskId);
+            using CrmDbContext db = _contextFactory.CreateDbContext();
+            var taskEntity = db.PipelineTasks.FirstOrDefault(t => t.Id == taskId);
             return TaskMapper.MapToModel(taskEntity);
         }
     }

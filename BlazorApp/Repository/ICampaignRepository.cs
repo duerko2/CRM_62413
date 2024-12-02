@@ -9,5 +9,6 @@ namespace BlazorApp.Repository
         void AddCampaign(CampaignModel campaign);
         void UpdateCampaign(CampaignModel campaign);
         void DeleteCampaign(int id);
+
     }
 }

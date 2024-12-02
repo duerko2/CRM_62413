@@ -9,7 +9,6 @@
 <h3>Create New Campaign</h3>
 
 <EditForm Model="newCampaignModel" OnValidSubmit="CreateCampaign">
-    <DataAnnotationsValidator />
     <ValidationSummary class="alert alert-danger" />
 
     <!-- Input for campaign name -->
@@ -24,7 +23,7 @@
         <select id="numberOfStages" class="form-control" @bind="numberOfStages">
             @for (int i = 1; i <= 5; i++)
             {
-                    <option value="@i">@i</option>
+                <option value="@i">@i</option>
             }
         </select>
     </div>
@@ -37,39 +36,46 @@
             int stageNumber = 1;
             foreach (var stage in newCampaignModel.Stages)
             {
-                        <div class="stage-section">
-                            <h5>Stage @stageNumber</h5>
-                            <div class="form-group">
-                                <label>Stage Name (max 20 chars)</label>
-                                <InputText class="form-control" maxlength="20" @bind-Value="stage.Name" placeholder="Enter stage name" />
-                            </div>
-                            <div class="form-group">
-                                <label>
-                                    <InputCheckbox @bind-Value="stage.RequireMasterTask" />
-                                    Require Master Task
-                                </label>
-                            </div>
+                <div class="stage-section">
+                    <h5>Stage @stageNumber</h5>
+                    <div class="form-group">
+                        <label>Stage Name (max 20 chars)</label>
+                        <InputText class="form-control" maxlength="20" @bind-Value="stage.Name" placeholder="Enter stage name" />
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <InputCheckbox @bind-Value="stage.RequireMasterTask" />
+                            Require Master Task
+                        </label>
+                    </div>
                     @if (stage.RequireMasterTask)
                     {
-                                    <div class="form-group">
-                                        <label>Master Task Description</label>
-                                        <InputTextArea class="form-control" @bind-Value="stage.MasterTaskDescription" placeholder="Enter master task description" />
-                                    </div>
-                    }
+                        <div class="form-group">
+                            <label>Master Task Description</label>
+                            <InputTextArea class="form-control" @bind-Value="stage.MasterTaskDescription" placeholder="Enter master task description" />
                         </div>
+                    }
+                </div>
                 stageNumber++;
             }
         }
         else
         {
-                <p>Error: Stages not initialized.</p>
+            <p>Error: Stages not initialized.</p>
         }
     </div>
 
-    <!-- Error message for missing required fields -->
-    @if (showErrorMessage)
+    <!-- Error message display -->
+    @if (errorMessages.Any())
     {
-            <div class="alert alert-danger">@errorMessage</div>
+        <div class="alert alert-danger">
+            <ul>
+                @foreach (var err in errorMessages)
+                {
+                    <li>@err</li>
+                }
+            </ul>
+        </div>
     }
 
     <!-- Submit button -->
@@ -101,8 +107,7 @@
             }
         }
     }
-    private bool showErrorMessage = false;
-    private string errorMessage = "";
+    private List<string> errorMessages = new List<string>();
 
     protected override void OnInitialized()
     {
@@ -123,7 +128,11 @@
             // Add new stages
             for (int i = currentCount; i < newCount; i++)
             {
-                newCampaignModel.Stages.Add(new CampaignStageModel());
+                newCampaignModel.Stages.Add(new CampaignStageModel()
+                {
+                    Name = string.Empty,
+                    MasterTaskDescription = string.Empty
+                });
             }
         }
         else if (newCount < currentCount)
@@ -133,59 +142,17 @@
         }
     }
 
-    private bool ValidateCampaign()
+    private async Task CreateCampaign()
     {
-        if (string.IsNullOrWhiteSpace(newCampaignModel.Name))
+        var errors = await CampaignService.AddCampaignAsync(newCampaignModel, numberOfStages);
+
+        if (errors != null && errors.Any())
         {
-            errorMessage = "Please enter a campaign name.";
-            return false;
-        }
-
-        if (newCampaignModel.Stages.Any(stage => string.IsNullOrWhiteSpace(stage.Name)))
-        {
-            errorMessage = "Please provide names for all stages.";
-            return false;
-        }
-
-        if (newCampaignModel.Stages.Any(stage => stage.Name.Length > 20))
-        {
-            errorMessage = "Stage names must be 20 characters or fewer.";
-            return false;
-        }
-
-        if (newCampaignModel.Stages.Select(s => s.Name).Distinct().Count() != numberOfStages)
-        {
-            errorMessage = "Stage names must be unique.";
-            return false;
-        }
-
-        foreach (var stage in newCampaignModel.Stages)
-        {
-            if (stage.RequireMasterTask && string.IsNullOrWhiteSpace(stage.MasterTaskDescription))
-            {
-                errorMessage = $"Please provide a master task description for stage '{stage.Name}'.";
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-
-    private void CreateCampaign()
-    {
-        if (!ValidateCampaign())
-        {
-            showErrorMessage = true;
+            errorMessages = errors;
             return;
         }
 
-        showErrorMessage = false;
-
-        // Add the campaign via the service
-        CampaignService.AddCampaign(newCampaignModel);
-
-        // Navigate to the Campaigns page
+        errorMessages.Clear();
         NavigationManager.NavigateTo("/campaigns");
     }
 }
