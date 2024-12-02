@@ -1,5 +1,4 @@
-﻿<!-- Pages/Campaigns.razor -->
-@page "/campaigns"
+﻿@page "/campaigns"
 @using BlazorApp.Models
 @using BlazorApp.Services
 @inject CampaignService CampaignService
@@ -15,9 +14,15 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Campaign ID</th>
-                    <th>Campaign Name</th>
-                    <th>Number of Stages</th>
+                    <th @onclick="@(() => SortCampaigns(nameof(CampaignListRow.Id)))">
+                        Campaign ID @SortIndicator(nameof(CampaignListRow.Id))
+                    </th>
+                    <th @onclick="@(() => SortCampaigns(nameof(CampaignListRow.Name)))">
+                        Campaign Name @SortIndicator(nameof(CampaignListRow.Name))
+                    </th>
+                    <th @onclick="@(() => SortCampaigns(nameof(CampaignListRow.NumberOfStages)))">
+                        Number of Stages @SortIndicator(nameof(CampaignListRow.NumberOfStages))
+                    </th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -44,16 +49,82 @@
     }
 </div>
 
+<style>
+    th {
+        cursor: pointer;
+        user-select: none;
+    }
+
+    th span {
+        margin-left: 5px;
+    }
+
+    th:hover {
+        text-decoration: underline;
+    }
+</style>
+
 @code {
     private List<CampaignListRow> campaigns;
+    private string currentSortColumn = nameof(CampaignListRow.Id);
+    private bool ascending = true;
 
     protected override void OnInitialized()
     {
         campaigns = CampaignService.GetAllCampaigns();
+        SortCampaigns(currentSortColumn, resetSortDirection: false);
     }
 
     private void NavigateToCampaignDetail(int campaignId)
     {
         NavigationManager.NavigateTo($"/campaign/{campaignId}");
+    }
+
+    private void SortCampaigns(string columnName, bool resetSortDirection = true)
+    {
+        if (currentSortColumn == columnName)
+        {
+            if (resetSortDirection)
+            {
+                // Toggle sort order if the same column is clicked
+                ascending = !ascending;
+            }
+        }
+        else
+        {
+            // Sort new column ascending by default
+            currentSortColumn = columnName;
+            ascending = true;
+        }
+
+        // LINQ to sort the campaigns
+        campaigns = campaigns.OrderBy(campaign => GetSortValue(campaign, currentSortColumn)).ToList();
+
+        if (!ascending)
+        {
+            campaigns.Reverse();
+        }
+    }
+
+    private object GetSortValue(CampaignListRow campaign, string columnName)
+    {
+        return columnName switch
+        {
+            nameof(CampaignListRow.Id) => campaign.Id,
+            nameof(CampaignListRow.Name) => campaign.Name,
+            nameof(CampaignListRow.NumberOfStages) => campaign.NumberOfStages,
+            _ => campaign.Id
+        };
+    }
+
+    private MarkupString SortIndicator(string columnName)
+    {
+        if (currentSortColumn != columnName)
+        {
+            return new MarkupString("");
+        }
+
+        var arrow = ascending ? "&#9650;" : "&#9660;"; // Up or down arrow
+        return new MarkupString($"<span>{arrow}</span>");
     }
 }
