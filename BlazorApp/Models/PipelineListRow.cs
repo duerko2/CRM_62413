@@ -6,5 +6,6 @@
         public string ContactName { get; set; }
         public string CampaignName { get; set; }
         public string ActiveStage { get; set; }
+        public string Status { get; set; }
     }
 }

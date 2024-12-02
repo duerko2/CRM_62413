@@ -35,6 +35,7 @@ namespace BlazorApp.Repository
                     Id = p.Id,
                     ContactName = p.Contact.Name,
                     CampaignName = p.Campaign.Name,
+                    Status = p.Status,
                     ActiveStage = p.ActiveStage
                 })
                 .ToList();

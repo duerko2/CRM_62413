@@ -4,31 +4,70 @@
 @inject PipelineService PipelineService
 @inject NavigationManager NavigationManager
 
-<PageTitle>Active Pipelines</PageTitle>
+<PageTitle>Pipelines</PageTitle>
 
-<h3>Active Pipelines</h3>
+<h3>Pipelines</h3>
+
+<!-- Filter Buttons -->
+<div class="btn-group mb-3" role="group" aria-label="Filter Pipelines">
+    <button type="button"
+            class="@GetButtonClass(AllFilter)"
+            @onclick="() => FilterPipelines(AllFilter)">
+        All
+    </button>
+
+    <button type="button"
+            class="@GetButtonClass(ActiveFilter)"
+            @onclick="() => FilterPipelines(ActiveFilter)">
+        Active
+    </button>
+
+    <button type="button"
+            class="@GetButtonClass(WonFilter)"
+            @onclick="() => FilterPipelines(WonFilter)">
+        Won
+    </button>
+
+    <button type="button"
+            class="@GetButtonClass(LostFilter)"
+            @onclick="() => FilterPipelines(LostFilter)">
+        Won
+    </button>
+</div>
 
 <div class="container">
-    @if (pipelines != null && pipelines.Any())
+    @if (displayedPipelines != null && displayedPipelines.Any())
     {
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Pipeline ID</th>
-                    <th>Campaign</th>
-                    <th>Contact</th>
-                    <th>Active Stage</th>
+                    <th @onclick="@(() => SortPipelines(nameof(PipelineListRow.Id)))">
+                        Pipeline ID @SortIndicator(nameof(PipelineListRow.Id))
+                    </th>
+                    <th @onclick="@(() => SortPipelines(nameof(PipelineListRow.CampaignName)))">
+                        Campaign @SortIndicator(nameof(PipelineListRow.CampaignName))
+                    </th>
+                    <th @onclick="@(() => SortPipelines(nameof(PipelineListRow.ContactName)))">
+                        Contact @SortIndicator(nameof(PipelineListRow.ContactName))
+                    </th>
+                    <th @onclick="@(() => SortPipelines(nameof(PipelineListRow.ActiveStage)))">
+                        Active Stage @SortIndicator(nameof(PipelineListRow.ActiveStage))
+                    </th>
+                    <th @onclick="@(() => SortPipelines(nameof(PipelineListRow.Status)))">
+                        Status @SortIndicator(nameof(PipelineListRow.Status))
+                    </th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach (var pipeline in pipelines)
+                @foreach (var pipeline in displayedPipelines)
                 {
                     <tr>
                         <td>@pipeline.Id</td>
-                        <td>@pipeline.CampaignName</td> 
+                        <td>@pipeline.CampaignName</td>
                         <td>@pipeline.ContactName</td>
                         <td>@pipeline.ActiveStage</td>
+                        <td>@pipeline.Status</td>
                         <td>
                             <button class="btn btn-primary btn-sm" @onclick="() => NavigateToPipelineDetail(pipeline.Id)">
                                 View Details
@@ -41,20 +80,135 @@
     }
     else
     {
-        <p>No active pipelines available.</p>
+        <p>No pipelines available.</p>
     }
 </div>
 
+<style>
+    .btn-group .btn {
+        cursor: pointer;
+    }
+
+        .btn-group .btn.active {
+            background-color: #007bff;
+            color: white;
+        }
+
+    th {
+        cursor: pointer;
+        user-select: none;
+    }
+
+        th span {
+            margin-left: 5px;
+        }
+
+        th:hover {
+            text-decoration: underline;
+        }
+</style>
+
 @code {
     private List<PipelineListRow> pipelines;
+    private List<PipelineListRow> displayedPipelines;
+    private string currentFilter = "All"; // Options: "All", "Active", "Finished"
+
+    private string currentSortColumn = nameof(PipelineListRow.Id);
+    private bool ascending = true;
+
+    private const string AllFilter = "All";
+    private const string ActiveFilter = "Active";
+    private const string WonFilter = "Won";
+    private const string LostFilter = "Lost";
 
     protected override void OnInitialized()
     {
         pipelines = PipelineService.GetAllPipelines();
+        displayedPipelines = new List<PipelineListRow>(pipelines); // Show all by default
     }
 
     private void NavigateToPipelineDetail(int pipelineId)
     {
         NavigationManager.NavigateTo($"/pipeline/{pipelineId}");
+    }
+
+    private void FilterPipelines(string statusFilter)
+    {
+        currentFilter = statusFilter;
+
+        if (statusFilter == AllFilter)
+        {
+            displayedPipelines = new List<PipelineListRow>(pipelines);
+        }
+        else if (statusFilter == ActiveFilter)
+        {
+            displayedPipelines = pipelines.Where(p => p.Status == "Active").ToList();
+        }
+        else if (statusFilter == WonFilter)
+        {
+            displayedPipelines = pipelines.Where(p => p.Status == "Won").ToList();
+        }
+        else if (statusFilter == LostFilter)
+        {
+            displayedPipelines = pipelines.Where(p => p.Status == "Lost").ToList();
+        }
+
+        // Apply current sorting after filtering
+        SortPipelines(currentSortColumn, resetSortDirection: false);
+    }
+
+    private void SortPipelines(string columnName, bool resetSortDirection = true)
+    {
+        if (currentSortColumn == columnName)
+        {
+            if (resetSortDirection)
+            {
+                // Toggle sort order if the same column is clicked
+                ascending = !ascending;
+            }
+        }
+        else
+        {
+            // Sort new column ascending by default
+            currentSortColumn = columnName;
+            ascending = true;
+        }
+
+        // LINQ to sort the displayedPipelines
+        displayedPipelines = displayedPipelines.OrderBy(pipeline => GetSortValue(pipeline, currentSortColumn)).ToList();
+
+        if (!ascending)
+        {
+            displayedPipelines.Reverse();
+        }
+    }
+
+    private object GetSortValue(PipelineListRow pipeline, string columnName)
+    {
+        return columnName switch
+        {
+            nameof(PipelineListRow.Id) => pipeline.Id,
+            nameof(PipelineListRow.ContactName) => pipeline.ContactName,
+            nameof(PipelineListRow.CampaignName) => pipeline.CampaignName,
+            nameof(PipelineListRow.ActiveStage) => pipeline.ActiveStage,
+            nameof(PipelineListRow.Status) => pipeline.Status,
+            _ => pipeline.Id
+        };
+    }
+
+    private MarkupString SortIndicator(string columnName)
+    {
+        if (currentSortColumn != columnName)
+        {
+            return new MarkupString("");
+        }
+
+        var arrow = ascending ? "&#9650;" : "&#9660;"; // Up or down arrow
+        return new MarkupString($"<span>{arrow}</span>");
+    }
+
+    private string GetButtonClass(string filterName)
+    {
+        return $"btn btn-secondary {(currentFilter == filterName ? "active" : "")}";
     }
 }
