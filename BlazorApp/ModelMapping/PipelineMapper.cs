@@ -15,6 +15,7 @@ namespace BlazorApp.ModelMapping
                 ContactId = entity.ContactId,
                 CampaignId = entity.CampaignId,
                 ActiveStage = entity.ActiveStage,
+                Status = entity.Status,
                 Tasks = entity.Tasks?.Select(TaskMapper.MapToModel).ToList() ?? new List<TaskModel>()
             };
         }
@@ -30,6 +31,7 @@ namespace BlazorApp.ModelMapping
                 ContactId = model.ContactId,
                 CampaignId = model.CampaignId,
                 ActiveStage = model.ActiveStage,
+                Status = model.Status,
                 Tasks = model.Tasks?.Select(TaskMapper.MapToEntity).ToList() ?? new List<Persistence.Entities.PipelineTask>()
             };
         }

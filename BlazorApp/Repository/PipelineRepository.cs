@@ -61,7 +61,8 @@ namespace BlazorApp.Repository
             {
                 // Update properties
                 existingEntity.ActiveStage = pipeline.ActiveStage;
-                // Update other properties as needed
+                existingEntity.Status = pipeline.Status; 
+                                                        
 
                 // Save changes
                 db.SaveChanges();
@@ -71,6 +72,7 @@ namespace BlazorApp.Repository
                 throw new Exception($"Pipeline with Id {pipeline.Id} not found.");
             }
         }
+
 
         public void DeletePipeline(int id)
         {

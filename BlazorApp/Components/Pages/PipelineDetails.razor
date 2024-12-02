@@ -17,9 +17,9 @@
         <h1>@pipeline.CampaignName</h1>
         <h4>@pipeline.ContactName (ID: @pipeline.ContactId)</h4>
 
-        <!-- Centered Pipeline Status Heading -->
+        <!-- Centered Pipeline Stage Heading -->
         <div class="text-center">
-            <h5 style="font-size: 24px;">Pipeline Status</h5>
+            <h5 style="font-size: 24px;">Pipeline Stage</h5>
         </div>
 
         <!-- Pipeline status buttons displayed as a flow -->
@@ -28,7 +28,7 @@
             {
                 <button class="stage-button @(GetButtonClassForStage(stage))"
                         @onclick="() => TryToggleStage(stage)"
-                        disabled="@ShouldDisableStage(stage)">
+                        disabled='@(ShouldDisableStage(stage) || pipeline.Status != "Active")'>
                     @stage
                 </button>
                 @if (pipeline.Stages.Last() != stage)
@@ -37,6 +37,24 @@
                 }
             }
         </div>
+
+        <!-- Add buttons for ending the pipeline -->
+        @if (pipeline.Status == "Active")
+        {
+            <button class="btn btn-success" @onclick="EndPipelineWithWin" disabled="@(pipeline.ActiveStage != pipeline.Stages.Last())">
+                End Pipeline with a Win
+            </button>
+
+            <button class="btn btn-danger" @onclick="EndPipelineWithLoss">
+                End Pipeline with a Loss
+            </button>
+        }
+        else
+        {
+            <div class="alert alert-info mt-3">
+                <strong>Pipeline Status:</strong> @pipeline.Status
+            </div>
+        }
 
         <!-- Notification message -->
         @if (!string.IsNullOrEmpty(notificationMessage))
@@ -58,7 +76,7 @@
                             <p><strong>Master Task:</strong> @pipeline.CurrentMasterTask.Description</p>
                         </div>
                         <button class="@(GetButtonClassForTask(pipeline.CurrentMasterTask))"
-                                disabled="@pipeline.CurrentMasterTask.IsCompleted"
+                                disabled="@(pipeline.CurrentMasterTask.IsCompleted || pipeline.Status != "Active")"
                                 @onclick="() => ToggleTaskComplete(pipeline.CurrentMasterTask)">
                             @(pipeline.CurrentMasterTask.IsCompleted ? "Completed" : "Complete")
                         </button>
@@ -68,8 +86,8 @@
                 <div class="scrollable-tasks">
                     <ul class="task-list">
                         @foreach (var task in pipeline.SortedTasks.Where(t =>
-                            t != pipeline.CurrentMasterTask &&
-                            (!t.IsMasterTask || t.IsCompleted)))
+                       t != pipeline.CurrentMasterTask &&
+                       (!t.IsMasterTask || t.IsCompleted)))
                         {
                             <li>
                                 <div class="task-item @(task.IsMasterTask ? "master-task" : "")">
@@ -79,7 +97,7 @@
                                         <p><strong>Deadline:</strong> @($"{task.Deadline:dd/MM/yyyy}")</p>
                                     </div>
                                     <button class="@(GetButtonClassForTask(task))"
-                                            disabled="@(task.IsMasterTask && task.IsCompleted)"
+                                            disabled="@(task.IsMasterTask && task.IsCompleted || pipeline.Status != "Active")"
                                             @onclick="() => ToggleTaskComplete(task)">
                                         @(task.IsCompleted ? "Completed" : "Complete")
                                     </button>
@@ -96,17 +114,17 @@
                 <div>
                     <div class="form-group">
                         <label for="taskDescription">Description</label>
-                        <input id="taskDescription" @bind="newTaskDescription" class="form-control" />
+                        <input id="taskDescription" @bind="newTaskDescription" class="form-control" disabled="@(pipeline.Status != "Active")" />
                     </div>
                     <div class="form-group">
                         <label for="createdDate">Created Date</label>
-                        <input id="createdDate" type="date" @bind="newTaskCreatedDate" class="form-control" />
+                        <input id="createdDate" type="date" @bind="newTaskCreatedDate" class="form-control" disabled="@(pipeline.Status != "Active")" />
                     </div>
                     <div class="form-group">
                         <label for="deadline">Deadline</label>
-                        <input id="deadline" type="date" @bind="newTaskDeadline" class="form-control" />
+                        <input id="deadline" type="date" @bind="newTaskDeadline" class="form-control" disabled="@(pipeline.Status != "Active")" />
                     </div>
-                    <button class="btn btn-primary mt-2" @onclick="AddTask">Add Task</button>
+                    <button class="btn btn-primary mt-2" @onclick="AddTask" disabled="@(pipeline.Status != "Active")">Add Task</button>
                 </div>
             </div>
 
@@ -245,7 +263,16 @@
 
     protected override async Task OnInitializedAsync()
     {
-        pipeline = await PipelineService.GetPipelineDetailsAsync(pipelineId);
+        try
+        {
+            pipeline = await PipelineService.GetPipelineDetailsAsync(pipelineId);
+            notificationMessage = null;
+        }
+        catch (Exception ex)
+        {
+            notificationMessage = "An error occurred while loading the pipeline details.";
+            Console.WriteLine(ex.Message);
+        }
     }
 
     private void GoBack() => NavigationManager.NavigateTo("/contacts");
@@ -256,10 +283,16 @@
         {
             await PipelineService.ToggleStageAsync(pipelineId, stageName);
             pipeline = await PipelineService.GetPipelineDetailsAsync(pipelineId);
+            notificationMessage = null;
+        }
+        catch (InvalidOperationException ex)
+        {
+            notificationMessage = ex.Message;
         }
         catch (Exception ex)
         {
-            notificationMessage = ex.Message;
+            notificationMessage = "An unexpected error occurred while changing the stage.";
+            Console.WriteLine(ex.Message);
         }
     }
 
@@ -269,10 +302,16 @@
         {
             await PipelineService.ToggleTaskCompleteAsync(task);
             pipeline = await PipelineService.GetPipelineDetailsAsync(pipelineId);
+            notificationMessage = null;
+        }
+        catch (InvalidOperationException ex)
+        {
+            notificationMessage = ex.Message;
         }
         catch (Exception ex)
         {
-            notificationMessage = ex.Message;
+            notificationMessage = "An error occurred while updating the task.";
+            Console.WriteLine(ex.Message);
         }
     }
 
@@ -286,22 +325,82 @@
             newTaskDescription = string.Empty;
             newTaskCreatedDate = DateTime.Today;
             newTaskDeadline = DateTime.Today;
+            notificationMessage = null;
+        }
+        catch (InvalidOperationException ex)
+        {
+            notificationMessage = ex.Message;
+        }
+        catch (ArgumentException ex)
+        {
+            notificationMessage = ex.Message;
         }
         catch (Exception ex)
         {
+            notificationMessage = "An unexpected error occurred while adding the task.";
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task EndPipelineWithWin()
+    {
+        try
+        {
+            await PipelineService.EndPipelineWithWinAsync(pipelineId);
+            pipeline.Status = "Won";
+            notificationMessage = null;
+        }
+        catch (InvalidOperationException ex)
+        {
             notificationMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            notificationMessage = "An error occurred while ending the pipeline.";
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task EndPipelineWithLoss()
+    {
+        try
+        {
+            await PipelineService.EndPipelineWithLossAsync(pipelineId);
+            pipeline.Status = "Lost";
+            notificationMessage = null;
+        }
+        catch (InvalidOperationException ex)
+        {
+            notificationMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            notificationMessage = "An error occurred while ending the pipeline.";
+            Console.WriteLine(ex.Message);
         }
     }
 
     private string GetButtonClassForStage(string stage)
     {
-        if (stage == pipeline.ActiveStage)
-            return "active";
-        else if (pipeline.Stages.IndexOf(stage) < pipeline.Stages.IndexOf(pipeline.ActiveStage))
+        int stageIndex = pipeline.Stages.IndexOf(stage);
+        int activeStageIndex = pipeline.Stages.IndexOf(pipeline.ActiveStage);
+
+        if (pipeline.Status == "Won")
+        {
+            // Mark all stages up to and including the last stage as completed
             return "completed";
-        else
-            return "";
+        }
+        else // Don't change anything
+        {
+            if (stageIndex < activeStageIndex)
+                return "completed";
+            else if (stageIndex == activeStageIndex)
+                return "active";
+            else
+                return "";
+        }
     }
+
 
     private bool ShouldDisableStage(string stage)
     {
@@ -311,7 +410,7 @@
         var currentIndex = pipeline.Stages.IndexOf(pipeline.ActiveStage);
         var targetIndex = pipeline.Stages.IndexOf(stage);
 
-        return targetIndex != currentIndex + 1;
+        return targetIndex != currentIndex + 1 || pipeline.Status != "Active";
     }
 
     private string GetButtonClassForTask(TaskModel task)

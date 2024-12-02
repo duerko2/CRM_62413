@@ -70,7 +70,8 @@ namespace BlazorApp.Services
             {
                 Id = pipeline.Id,
                 ActiveStage = pipeline.ActiveStage,
-                Stages = campaign.Stages.Select(s => s.Name).ToList(), // Convert to List<string>
+                Status = pipeline.Status, 
+                Stages = campaign.Stages.Select(s => s.Name).ToList(),
                 Tasks = pipeline.Tasks,
                 CurrentMasterTask = pipeline.Tasks.FirstOrDefault(t => t.IsMasterTask && t.Stage == pipeline.ActiveStage && !t.IsCompleted),
                 SortedTasks = pipeline.Tasks
@@ -84,17 +85,24 @@ namespace BlazorApp.Services
             };
         }
 
+
         public async Task ToggleStageAsync(int pipelineId, string targetStage)
         {
             var pipeline = _pipelineRepository.GetPipeline(pipelineId);
             if (pipeline == null) throw new Exception($"Pipeline with Id {pipelineId} not found.");
+
+            // Check if pipeline is active
+            if (pipeline.Status != "Active")
+            {
+                throw new InvalidOperationException("Cannot change stages of a pipeline that is not active.");
+            }
 
             var currentMasterTask = pipeline.Tasks
                 .FirstOrDefault(t => t.IsMasterTask && t.Stage == pipeline.ActiveStage);
 
             if (currentMasterTask != null && !currentMasterTask.IsCompleted && targetStage != pipeline.ActiveStage)
             {
-                throw new Exception("Complete the master task for the current stage before proceeding.");
+                throw new InvalidOperationException("Complete the master task for the current stage before proceeding.");
             }
 
             pipeline.ActiveStage = targetStage;
@@ -103,20 +111,43 @@ namespace BlazorApp.Services
 
         public async Task ToggleTaskCompleteAsync(TaskModel task)
         {
-            // Retrieve the task from the repository to ensure we have the latest data
             var existingTask = _pipelineRepository.GetTaskById(task.Id);
             if (existingTask == null)
             {
                 throw new Exception("Task not found.");
             }
+
+            var pipeline = _pipelineRepository.GetPipeline(existingTask.PipelineId);
+            if (pipeline == null)
+            {
+                throw new Exception("Pipeline not found.");
+            }
+
+            // Check if pipeline is active
+            if (pipeline.Status != "Active")
+            {
+                throw new InvalidOperationException("Cannot modify tasks of a pipeline that is not active.");
+            }
+
             existingTask.IsCompleted = !existingTask.IsCompleted;
             _pipelineRepository.UpdateTask(existingTask);
         }
 
         public async Task AddTaskAsync(string description, DateTime createdDate, DateTime deadline, int pipelineId)
         {
+            if (string.IsNullOrWhiteSpace(description))
+            {
+                throw new ArgumentException("Task description cannot be empty.");
+            }
+
             var pipeline = _pipelineRepository.GetPipeline(pipelineId);
             if (pipeline == null) throw new Exception($"Pipeline with Id {pipelineId} not found.");
+
+            // Check if pipeline is active
+            if (pipeline.Status != "Active")
+            {
+                throw new InvalidOperationException("Cannot add tasks to a pipeline that is not active.");
+            }
 
             var newTask = new TaskModel
             {
@@ -132,7 +163,59 @@ namespace BlazorApp.Services
             _pipelineRepository.AddTask(newTask);
         }
 
-        public PipelineModel GetPipelineById(int id)
+        public async Task EndPipelineWithWinAsync(int pipelineId)
+        {
+            var pipeline = _pipelineRepository.GetPipeline(pipelineId);
+            if (pipeline == null) throw new Exception($"Pipeline with Id {pipelineId} not found.");
+
+            if (pipeline.Status != "Active")
+            {
+                throw new InvalidOperationException("Cannot end a pipeline that is not active.");
+            }
+
+            // Retrieve the campaign associated with the pipeline
+            var campaign = _campaignService.GetCampaignById(pipeline.CampaignId);
+            if (campaign == null)
+            {
+                throw new Exception($"Campaign with Id {pipeline.CampaignId} not found.");
+            }
+
+            // Check if the pipeline is at the last stage
+            if (pipeline.ActiveStage != campaign.Stages.Last().Name)
+            {
+                throw new InvalidOperationException("Pipeline must be at the last stage to be ended with a win.");
+            }
+
+            // Check for incomplete master task in the last stage
+            var currentMasterTask = pipeline.Tasks.FirstOrDefault(t => t.IsMasterTask && t.Stage == pipeline.ActiveStage && !t.IsCompleted);
+            if (currentMasterTask != null)
+            {
+                throw new InvalidOperationException("Complete the master task for the last stage before ending the pipeline with a win.");
+            }
+
+            // Update pipeline status
+            pipeline.Status = "Won";
+            _pipelineRepository.UpdatePipeline(pipeline);
+        }
+
+
+        public async Task EndPipelineWithLossAsync(int pipelineId)
+        {
+            var pipeline = _pipelineRepository.GetPipeline(pipelineId);
+            if (pipeline == null) throw new Exception($"Pipeline with Id {pipelineId} not found.");
+
+            if (pipeline.Status != "Active")
+            {
+                throw new InvalidOperationException("Cannot end a pipeline that is not active.");
+            }
+
+            // Update pipeline status
+            pipeline.Status = "Lost";
+            _pipelineRepository.UpdatePipeline(pipeline);
+        }
+    
+
+    public PipelineModel GetPipelineById(int id)
         {
             return _pipelineRepository.GetPipeline(id);
         }

@@ -12,5 +12,7 @@
         public string ContactName { get; set; }
         public int ContactId { get; set; }
         public LatestDataModel LatestData { get; set; }
+        public string Status { get; set; }
+
     }
 }
