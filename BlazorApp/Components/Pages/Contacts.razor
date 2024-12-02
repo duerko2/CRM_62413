@@ -4,8 +4,7 @@
 @using RolesAndPermissions
 @inject Services.ContactService ContactService
 @inject IUserAccessManager UserAccessManager;
-
-
+@inject NavigationManager NavigationManager
 
 <PageTitle>Contacts</PageTitle>
 
@@ -17,27 +16,28 @@
 }
 else
 {
-    <table class="table">
+    <table class="table table-striped">
         <thead>
             <tr>
-                <th @onclick="@(() => SortContacts(nameof(Contact.Name)))">
-                    Company Name @SortIndicator(nameof(Contact.Name))
+                <th @onclick="@(() => SortContacts(nameof(ContactListRow.Name)))">
+                    Contact Name @SortIndicator(nameof(ContactListRow.Name))
                 </th>
-                <th @onclick="@(() => SortContacts(nameof(Contact.Type)))">
-                    Type @SortIndicator(nameof(Contact.Type))
+                <th @onclick="@(() => SortContacts(nameof(ContactListRow.Type)))">
+                    Type @SortIndicator(nameof(ContactListRow.Type))
                 </th>
-                <th @onclick="@(() => SortContacts(nameof(Contact.Company)))">
-                    Company @SortIndicator(nameof(Contact.Company))
+                <th @onclick="@(() => SortContacts(nameof(ContactListRow.Company)))">
+                    Company @SortIndicator(nameof(ContactListRow.Company))
                 </th>
-                <th @onclick="@(() => SortContacts(nameof(Contact.VAT)))">
-                    VAT @SortIndicator(nameof(Contact.VAT))
+                <th @onclick="@(() => SortContacts(nameof(ContactListRow.VAT)))">
+                    VAT @SortIndicator(nameof(ContactListRow.VAT))
                 </th>
-                @if(UserAccessManager.HasPermission(AuthenticationStateTask.Result.User, "ViewAllContacts"))
+                @if (UserAccessManager.HasPermission(AuthenticationStateTask.Result.User, "ViewAllContacts"))
                 {
-                    <th @onClick="@(() => SortContacts("SalesRep"))">
-                        Sales Rep @SortIndicator("SalesRep"))
+                    <th @onclick="@(() => SortContacts(nameof(ContactListRow.RepName)))">
+                        Sales Rep @SortIndicator(nameof(ContactListRow.RepName))
                     </th>
                 }
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -52,10 +52,15 @@ else
                     <td>@contact.Type.ToString()</td>
                     <td>@contact.Company</td>
                     <td>@contact.VAT</td>
-                    @if(UserAccessManager.HasPermission(AuthenticationStateTask.Result.User, "ViewAllContacts"))
+                    @if (UserAccessManager.HasPermission(AuthenticationStateTask.Result.User, "ViewAllContacts"))
                     {
-                    <td>@contact.RepName</td>
+                        <td>@contact.RepName</td>
                     }
+                    <td>
+                        <button class="btn btn-primary btn-sm" @onclick="() => NavigateToContactDetail(contact.Id)">
+                            View Details
+                        </button>
+                    </td>
                 </tr>
             }
         </tbody>
@@ -79,7 +84,7 @@ else
 
 @code {
     private List<ContactListRow> contacts;
-    private string currentSortColumn = nameof(Contact.Id);
+    private string currentSortColumn = nameof(ContactListRow.Id);
     private bool ascending = true;
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
@@ -89,7 +94,7 @@ else
         var user = authState.User;
         var userId = user.FindFirst(ClaimTypes.NameIdentifier);
         var userIdInt = userId == default ? default : int.Parse(userId.Value);
-        if (userIdInt == 0 )
+        if (userIdInt == 0)
         {
             Console.WriteLine("User not found");
             return;
@@ -99,11 +104,11 @@ else
         {
             await LoadAllContacts(userIdInt);
         }
-        else if(UserAccessManager.HasPermission(user, "ViewOwnContacts"))
+        else if (UserAccessManager.HasPermission(user, "ViewOwnContacts"))
         {
             await LoadContacts(userIdInt);
         }
-        SortContacts(currentSortColumn);
+        SortContacts(currentSortColumn, resetSortDirection: false);
         StateHasChanged();
     }
 
@@ -111,18 +116,26 @@ else
     {
         contacts = ContactService.GetContactsForCompany(userId);
     }
-    
+
     private async Task LoadContacts(int userId)
     {
         contacts = ContactService.GetContacts(userId);
     }
 
-    private void SortContacts(string columnName)
+    private void NavigateToContactDetail(int contactId)
+    {
+        NavigationManager.NavigateTo($"/contacts/{contactId}");
+    }
+
+    private void SortContacts(string columnName, bool resetSortDirection = true)
     {
         if (currentSortColumn == columnName)
         {
-            // Toggle sort order if the same column is clicked
-            ascending = !ascending;
+            if (resetSortDirection)
+            {
+                // Toggle sort order if the same column is clicked
+                ascending = !ascending;
+            }
         }
         else
         {
@@ -144,9 +157,12 @@ else
     {
         return columnName switch
         {
-            nameof(Contact.Name) => contact.Name,
-            nameof(Contact.Type) => contact.Type,
-            nameof(Contact.Id) => contact.Id,
+            nameof(ContactListRow.Name) => contact.Name,
+            nameof(ContactListRow.Type) => contact.Type,
+            nameof(ContactListRow.Company) => contact.Company,
+            nameof(ContactListRow.VAT) => contact.VAT,
+            nameof(ContactListRow.RepName) => contact.RepName,
+            nameof(ContactListRow.Id) => contact.Id,
             _ => contact.Id
         };
     }
