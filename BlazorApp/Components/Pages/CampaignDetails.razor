@@ -29,7 +29,13 @@
             {
                 var stage = campaign.Stages[i];
                 <li class="stage-item">
-                    <h5>Stage @(i + 1): @stage.Name</h5>
+                    <h5>
+                        Stage @(i + 1): @stage.Name
+                        @if (stage.IsConversionStage)
+                        {
+                            <span class="badge bg-success ms-2">Conversion Stage</span>
+                        }
+                    </h5>
                     @if (stage.RequireMasterTask)
                     {
                         <p><strong>Master Task Description:</strong> @stage.MasterTaskDescription</p>

@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
         public string ActiveStage { get; set; }
-        public List<string> Stages { get; set; }
+        public List<StageDetailModel> Stages { get; set; } // Updated to StageDetailModel
         public List<TaskModel> Tasks { get; set; }
         public TaskModel CurrentMasterTask { get; set; }
         public List<TaskModel> SortedTasks { get; set; }

@@ -27,9 +27,13 @@
             @foreach (var stage in pipeline.Stages)
             {
                 <button class="stage-button @(GetButtonClassForStage(stage))"
-                        @onclick="() => TryToggleStage(stage)"
-                        disabled='@(ShouldDisableStage(stage) || pipeline.Status != "Active")'>
-                    @stage
+                        @onclick="() => TryToggleStage(stage.Name)"
+                        disabled='@(ShouldDisableStage(stage.Name) || pipeline.Status != "Active")'>
+                    @stage.Name
+                    @if (stage.IsConversionStage)
+                    {
+                        <span class="badge bg-warning text-dark ms-2">Lead to Customer</span>
+                    }
                 </button>
                 @if (pipeline.Stages.Last() != stage)
                 {
@@ -41,7 +45,7 @@
         <!-- Add buttons for ending the pipeline -->
         @if (pipeline.Status == "Active")
         {
-            <button class="btn btn-success" @onclick="EndPipelineWithWin" disabled="@(pipeline.ActiveStage != pipeline.Stages.Last())">
+            <button class="btn btn-success" @onclick="EndPipelineWithWin" disabled="@(pipeline.ActiveStage != pipeline.Stages.Last().Name)">
                 End Pipeline with a Win
             </button>
 
@@ -248,6 +252,12 @@
         font-size: 24px; /* Adjust arrow size */
         margin: 0 5px; /* Space around the arrow */
     }
+
+    /* Badge styling for Conversion Stage */
+    .badge-conversion {
+        background-color: #ffc107; /* Bootstrap warning color */
+        color: #212529; /* Dark text for contrast */
+    }
 </style>
 
 @code {
@@ -380,10 +390,10 @@
         }
     }
 
-    private string GetButtonClassForStage(string stage)
+    private string GetButtonClassForStage(StageDetailModel stage)
     {
         int stageIndex = pipeline.Stages.IndexOf(stage);
-        int activeStageIndex = pipeline.Stages.IndexOf(pipeline.ActiveStage);
+        int activeStageIndex = pipeline.Stages.FindIndex(s => s.Name == pipeline.ActiveStage);
 
         if (pipeline.Status == "Won")
         {
@@ -401,14 +411,13 @@
         }
     }
 
-
     private bool ShouldDisableStage(string stage)
     {
         if (stage == pipeline.ActiveStage)
             return false;
 
-        var currentIndex = pipeline.Stages.IndexOf(pipeline.ActiveStage);
-        var targetIndex = pipeline.Stages.IndexOf(stage);
+        var currentIndex = pipeline.Stages.FindIndex(s => s.Name == pipeline.ActiveStage);
+        var targetIndex = pipeline.Stages.FindIndex(s => s.Name == stage);
 
         return targetIndex != currentIndex + 1 || pipeline.Status != "Active";
     }

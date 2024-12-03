@@ -45,6 +45,11 @@ public class CrmDbContext : DbContext
             .WithOne(t => t.Pipeline)
             .HasForeignKey(t => t.PipelineId)
             .OnDelete(DeleteBehavior.Cascade); // Delete Tasks when Pipeline is deleted
+
+
+        modelBuilder.Entity<CampaignStage>()
+            .Property(s => s.IsConversionStage)
+            .IsRequired();
     }
     
     public DbSet<Contact> Contacts { get; set; }

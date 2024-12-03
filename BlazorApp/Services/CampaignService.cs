@@ -72,6 +72,11 @@ namespace BlazorApp.Services
                     }
                 }
             }
+            int conversionStageCount = campaign.Stages.Count(s => s.IsConversionStage);
+            if (conversionStageCount > 1)
+            {
+                errors.Add("Only one stage can be marked as the conversion stage.");
+            }
 
             return errors;
         }

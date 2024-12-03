@@ -6,15 +6,57 @@ namespace BlazorApp.Services
     public class PipelineService
     {
         private readonly IPipelineRepository _pipelineRepository;
+        private readonly IContactRepository _contactRepository;
+        private readonly ICampaignRepository _campaignRepository;
         private readonly ContactService _contactService;
         private readonly CampaignService _campaignService;
 
-        public PipelineService(IPipelineRepository pipelineRepository, ContactService contactService, CampaignService campaignService)
+        public PipelineService(IPipelineRepository pipelineRepository, IContactRepository contactRepository, ICampaignRepository campaignRepository, ContactService contactService, CampaignService campaignService)
         {
             _pipelineRepository = pipelineRepository;
+            _contactRepository = contactRepository;
+            _campaignRepository = campaignRepository;
             _contactService = contactService;
             _campaignService = campaignService;
         }
+
+
+        public void UpdatePipelineStage(int pipelineId, string newStageName)
+        {
+            var pipeline = _pipelineRepository.GetPipeline(pipelineId);
+            if (pipeline == null)
+            {
+                throw new Exception("Pipeline not found");
+            }
+
+            // Capture the previous stage before updating
+            var previousStageName = pipeline.ActiveStage;
+
+            // Update the active stage to the new stage
+            pipeline.ActiveStage = newStageName;
+            _pipelineRepository.UpdatePipeline(pipeline);
+
+            // Fetch campaign details to access stages
+            var campaign = _campaignRepository.GetCampaign(pipeline.CampaignId);
+            if (campaign == null)
+            {
+                throw new Exception($"Campaign with ID {pipeline.CampaignId} not found.");
+            }
+
+            // Find the previous stage
+            var previousStage = campaign.Stages.FirstOrDefault(s => s.Name == previousStageName);
+            if (previousStage != null && previousStage.IsConversionStage)
+            {
+                // Convert the contact from lead to customer
+                var contact = _contactRepository.GetContact(pipeline.ContactId);
+                if (contact != null && contact.Type == ContactType.Lead)
+                {
+                    contact.Type = ContactType.Customer;
+                    _contactRepository.UpdateContact(contact);
+                }
+            }
+        }
+
 
         public List<ContactListRow> GetContactsForUser(int userId)
         {
@@ -62,16 +104,22 @@ namespace BlazorApp.Services
             var pipeline = _pipelineRepository.GetPipeline(pipelineId);
             if (pipeline == null) throw new Exception($"Pipeline with Id {pipelineId} not found.");
 
-            // Delegate to existing services
             var campaign = _campaignService.GetCampaignById(pipeline.CampaignId);
             var contact = _contactService.GetContactById(pipeline.ContactId);
+
+            // Map stages with IsConversionStage flag
+            var stageDetails = campaign.Stages.Select(s => new StageDetailModel
+            {
+                Name = s.Name,
+                IsConversionStage = s.IsConversionStage
+            }).ToList();
 
             return new PipelineDetailModel
             {
                 Id = pipeline.Id,
                 ActiveStage = pipeline.ActiveStage,
-                Status = pipeline.Status, 
-                Stages = campaign.Stages.Select(s => s.Name).ToList(),
+                Status = pipeline.Status,
+                Stages = stageDetails,
                 Tasks = pipeline.Tasks,
                 CurrentMasterTask = pipeline.Tasks.FirstOrDefault(t => t.IsMasterTask && t.Stage == pipeline.ActiveStage && !t.IsCompleted),
                 SortedTasks = pipeline.Tasks
@@ -105,9 +153,35 @@ namespace BlazorApp.Services
                 throw new InvalidOperationException("Complete the master task for the current stage before proceeding.");
             }
 
+            // Capture the previous stage before updating
+            var previousStageName = pipeline.ActiveStage;
+
+            // Update the active stage to the target stage
             pipeline.ActiveStage = targetStage;
             _pipelineRepository.UpdatePipeline(pipeline);
+
+            // Fetch campaign details to access stages
+            var campaign = _campaignRepository.GetCampaign(pipeline.CampaignId);
+            if (campaign == null)
+            {
+                throw new Exception($"Campaign with ID {pipeline.CampaignId} not found.");
+            }
+
+            // Find the previous stage
+            var previousStage = campaign.Stages.FirstOrDefault(s => s.Name == previousStageName);
+            if (previousStage != null && previousStage.IsConversionStage)
+            {
+                // Convert the contact from lead to customer
+                var contact = _contactRepository.GetContact(pipeline.ContactId);
+                if (contact != null && contact.Type == ContactType.Lead)
+                {
+                    contact.Type = ContactType.Customer;
+                    _contactRepository.UpdateContact(contact);
+                }
+            }
         }
+
+
 
         public async Task ToggleTaskCompleteAsync(TaskModel task)
         {

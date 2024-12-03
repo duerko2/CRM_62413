@@ -33,31 +33,40 @@
         <label>Define Stages</label>
         @if (newCampaignModel.Stages != null)
         {
-            int stageNumber = 1;
-            foreach (var stage in newCampaignModel.Stages)
-            {
-                <div class="stage-section">
-                    <h5>Stage @stageNumber</h5>
-                    <div class="form-group">
-                        <label>Stage Name (max 20 chars)</label>
-                        <InputText class="form-control" maxlength="20" @bind-Value="stage.Name" placeholder="Enter stage name" />
-                    </div>
-                    <div class="form-group">
-                        <label>
-                            <InputCheckbox @bind-Value="stage.RequireMasterTask" />
-                            Require Master Task
-                        </label>
-                    </div>
-                    @if (stage.RequireMasterTask)
-                    {
+            <!-- Begin InputRadioGroup -->
+            <InputRadioGroup @bind-Value="selectedConversionStageIndex">
+                @for (int stageIndex = 0; stageIndex < newCampaignModel.Stages.Count; stageIndex++)
+                {
+                    var stage = newCampaignModel.Stages[stageIndex];
+                    <div class="stage-section">
+                        <h5>Stage @(stageIndex + 1)</h5>
                         <div class="form-group">
-                            <label>Master Task Description</label>
-                            <InputTextArea class="form-control" @bind-Value="stage.MasterTaskDescription" placeholder="Enter master task description" />
+                            <label>Stage Name (max 20 chars)</label>
+                            <InputText class="form-control" maxlength="20" @bind-Value="stage.Name" placeholder="Enter stage name" />
                         </div>
-                    }
-                </div>
-                stageNumber++;
-            }
+                        <div class="form-group">
+                            <label>
+                                <InputCheckbox @bind-Value="stage.RequireMasterTask" />
+                                Require Master Task
+                            </label>
+                        </div>
+                        @if (stage.RequireMasterTask)
+                        {
+                            <div class="form-group">
+                                <label>Master Task Description</label>
+                                <InputTextArea class="form-control" @bind-Value="stage.MasterTaskDescription" placeholder="Enter master task description" />
+                            </div>
+                        }
+                        <div class="form-group">
+                            <label>
+                                <InputRadio Value="@stageIndex" />
+                                Convert contact to customer when reaching this stage
+                            </label>
+                        </div>
+                    </div>
+                }
+            </InputRadioGroup>
+            <!-- End InputRadioGroup -->
         }
         else
         {
@@ -109,6 +118,9 @@
     }
     private List<string> errorMessages = new List<string>();
 
+    // Initialize to -1 to indicate no selection
+    private int selectedConversionStageIndex = -1;
+
     protected override void OnInitialized()
     {
         AdjustStages(numberOfStages);
@@ -129,10 +141,10 @@
             for (int i = currentCount; i < newCount; i++)
             {
                 newCampaignModel.Stages.Add(new CampaignStageModel()
-                {
-                    Name = string.Empty,
-                    MasterTaskDescription = string.Empty
-                });
+                    {
+                        Name = string.Empty,
+                        MasterTaskDescription = string.Empty
+                    });
             }
         }
         else if (newCount < currentCount)
@@ -144,6 +156,25 @@
 
     private async Task CreateCampaign()
     {
+        errorMessages.Clear();
+
+        // Set the IsConversionStage property based on selectedConversionStageIndex
+        if (selectedConversionStageIndex >= 0 && selectedConversionStageIndex < newCampaignModel.Stages.Count)
+        {
+            for (int i = 0; i < newCampaignModel.Stages.Count; i++)
+            {
+                newCampaignModel.Stages[i].IsConversionStage = (i == selectedConversionStageIndex);
+            }
+        }
+        else
+        {
+            // Ensure that IsConversionStage is false for all stages if none is selected
+            foreach (var stage in newCampaignModel.Stages)
+            {
+                stage.IsConversionStage = false;
+            }
+        }
+
         var errors = await CampaignService.AddCampaignAsync(newCampaignModel, numberOfStages);
 
         if (errors != null && errors.Any())
