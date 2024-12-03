@@ -15,7 +15,12 @@
     {
         <!-- Display campaign name and contact information -->
         <h1>@pipeline.CampaignName</h1>
-        <h4>@pipeline.ContactName (ID: @pipeline.ContactId)</h4>
+
+        <h4>
+            <NavLink href="@($"/contacts/{pipeline.ContactId}")" class="contact-link">
+                @pipeline.ContactName (ID: @pipeline.ContactId)
+            </NavLink>
+        </h4>
 
         <!-- Centered Pipeline Stage Heading -->
         <div class="text-center">
@@ -425,5 +430,10 @@
     private string GetButtonClassForTask(TaskModel task)
     {
         return task.IsCompleted ? "btn btn-success completed" : "btn btn-primary";
+    }
+
+    private void NavigateToContactDetail(int contactId)
+    {
+        NavigationManager.NavigateTo($"/contacts/{contactId}");
     }
 }
