@@ -5,8 +5,8 @@
         @for (int i = 0; i < FunnelData.Stages.Count; i++)
         {
         var stage = FunnelData.Stages[i];
-        var leftWidth = FunnelData.Stages.Count*20 - (i * 15); 
-        var rightWidth = FunnelData.Stages.Count*20 - ((i + 1) * 15); 
+        var leftWidth = 100 - (i * 15); 
+        var rightWidth = 100 - ((i + 1) * 15); 
         <div class="shadow funnel-stage text-white"
              style="height: 100%; clip-path: polygon(0% @(50 - leftWidth / 2)%, 100% @(50 - rightWidth / 2)%, 100% @(50 + rightWidth / 2)%, 0% @(50 + leftWidth / 2)%); background-color: @GetStageColor(i);">
             <div class="funnel-content">

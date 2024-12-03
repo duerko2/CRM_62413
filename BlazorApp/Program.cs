@@ -41,6 +41,7 @@ internal class Program
         builder.Services.AddScoped<PipelineService>();
         builder.Services.AddScoped<ContactService>();
         builder.Services.AddScoped<CompanySettingsService>();
+        builder.Services.AddScoped<DashboardService>();
 
 
 
@@ -51,6 +52,7 @@ internal class Program
         builder.Services.AddScoped<ICampaignRepository, CampaignRepository>();
         builder.Services.AddScoped<IPipelineRepository, PipelineRepository>();
         builder.Services.AddScoped<ICompanySettingsRepository, EFCompanySettingsRepository>();
+        builder.Services.AddScoped<IDashboardRepository, EFDashboardRepository>();
 
 
 

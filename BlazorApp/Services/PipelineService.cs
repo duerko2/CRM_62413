@@ -354,5 +354,10 @@ namespace BlazorApp.Services
                 };
             }
         }
+
+        public List<PipelineModel> GetAllPipelinesForCampaign(int campaignId)
+        {
+            return _pipelineRepository.GetAllPipelinesForCampaign(campaignId);
+        }
     }
 }

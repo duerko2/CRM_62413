@@ -1,7 +1,8 @@
 @using RolesAndPermissions
+@inject DashboardService DashboardService
 @inject IUserAccessManager UserAccessManager;
 
-@if(UserAccessManager.HasPermission(FoundUserContext.User, "ManagerDashboard"))
+@if(UserAccessManager.HasPermission(UserContext.User, "ManagerDashboard"))
 {
     <h1>Manager Dashboard</h1>
 }
@@ -49,55 +50,39 @@ else if(UserAccessManager.HasPermission(UserContext.User, "UserDashboard"))
 
 @code {
     [CascadingParameter] private UserContext UserContext { get; set; }
-    private UserContext FoundUserContext { get; set; }
-
-    private class AvailableCampaigns
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-    }
-
-    private string selectedCamapaignId = "3";
-    private List<AvailableCampaigns> availableCampaigns = new List<AvailableCampaigns>
-    {
-        new AvailableCampaigns { Id = 3, Name = "One" },
-        new AvailableCampaigns { Id = 4, Name = "Two" },
-        new AvailableCampaigns { Id = 5, Name = "Inactive" },
-        new AvailableCampaigns { Id = 6, Name = "Completed" },
-        new AvailableCampaigns { Id = 7, Name = "Archived" },
-    };
+    
+    private int selectedCamapaignId;
+    private List<AvailableCampaigns> availableCampaigns;
     private FunnelView funnelData;
 
     protected override async Task OnInitializedAsync()
     {
-        FoundUserContext = UserContext;
-        funnelData = new FunnelView
+        availableCampaigns = DashboardService.GetAvailableCampaigns(UserContext.UserId);
+        if (!availableCampaigns.Any())
+            return;
+        
+        selectedCamapaignId = availableCampaigns.FirstOrDefault()?.Id ?? default;
+        
+        if(UserAccessManager.HasPermission(UserContext.User, "ManagerDashboard"))
         {
-            Stages = new List<FunnelViewStage>
-            {
-                new FunnelViewStage { StageName = "Awareness", Count = 150 },
-                new FunnelViewStage { StageName = "Interest", Count = 90 },
-                new FunnelViewStage { StageName = "Decision", Count = 30 },
-                new FunnelViewStage { StageName = "Action", Count = 10 },
-                new FunnelViewStage { StageName = "Last", Count = 5 },
-            }
-        };
+            funnelData = DashboardService.GetCampaignFunnel(selectedCamapaignId);
+        }
+        else if(UserAccessManager.HasPermission(UserContext.User, "UserDashboard"))
+        {
+            funnelData = DashboardService.GetCampaignFunnel(selectedCamapaignId, UserContext.UserId);
+        }
     }
 
     private void OnChange()
     {
-        Console.WriteLine(selectedCamapaignId);
-        funnelData = new FunnelView {
-            Stages = new List<FunnelViewStage>
+        if(UserAccessManager.HasPermission(UserContext.User, "ManagerDashboard"))
         {
-            new FunnelViewStage { StageName = "Awareness", Count = new Random().Next() },
-            new FunnelViewStage { StageName = "Interest", Count = 90 },
-            new FunnelViewStage { StageName = "Decision", Count = 30 },
-            new FunnelViewStage { StageName = "Action", Count = 10 },
-            new FunnelViewStage { StageName = "Last", Count = 5 },
+            funnelData = DashboardService.GetCampaignFunnel(selectedCamapaignId);
         }
-        };
-        Console.WriteLine("changed");
+        else if(UserAccessManager.HasPermission(UserContext.User, "UserDashboard"))
+        {
+            funnelData = DashboardService.GetCampaignFunnel(selectedCamapaignId, UserContext.UserId);
+        }
         StateHasChanged();
     }
 }

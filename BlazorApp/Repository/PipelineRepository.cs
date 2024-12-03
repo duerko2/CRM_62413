@@ -117,5 +117,29 @@ namespace BlazorApp.Repository
             var taskEntity = db.PipelineTasks.FirstOrDefault(t => t.Id == taskId);
             return TaskMapper.MapToModel(taskEntity);
         }
+        public List<PipelineModel> GetAllPipelinesForCampaign(int campaignId)
+        {
+            using CrmDbContext db = _contextFactory.CreateDbContext();
+            return db.Pipelines
+                .Where(p => p.CampaignId == campaignId)
+                .Select(p => new PipelineModel
+                {
+                    Id = p.Id,
+                    ContactId = p.ContactId,
+                    CampaignId = p.CampaignId,
+                    ActiveStage = p.ActiveStage,
+                    Status = p.Status,
+                    Tasks = p.Tasks.Select(t => new TaskModel
+                    {
+                        Id = t.Id,
+                        PipelineId = t.PipelineId,
+                        Description = t.Description,
+                        Deadline = t.Deadline,
+                        CreatedDate = t.CreatedDate,
+                        IsCompleted = t.IsCompleted,
+                    }).ToList()
+                })
+                .ToList();
+        }
     }
 }
