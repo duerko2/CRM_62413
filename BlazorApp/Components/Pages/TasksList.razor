@@ -1,121 +1,115 @@
 @inject NavigationManager NavigationManager
 
-<div class="accordion open" id="tasksAccordion">
+<div class="accordion open mb-4 mt-4" id="tasksAccordion">
     <!-- Past Deadline Section -->
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="pastDeadlineHeading">
-            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#pastDeadline" aria-expanded="true" aria-controls="pastDeadline">
-                Past Deadline
-            </button>
-        </h2>
-        <div id="pastDeadline" class="accordion-collapse collapse show" aria-labelledby="pastDeadlineHeading" data-bs-parent="#tasksAccordion">
-            <div class="accordion-body">
-                @if (tasks.Any(t => t.IsOverdue))
-                {
-                <div class="row row-cols-1 g-3">
-                    @foreach (var task in tasks.Where(t => t.IsOverdue))
-                    {
-                        <div class="col">
-                            <div @onclick="@(() => GoToPipeline(task.PipelineId))">
-                                <div class="card border-danger">
-                                    <div class="card-body" onClick="@(() => GoToPipeline(task.PipelineId))">
+    @if (tasks.Any(t => t.IsOverdue))
+    {
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="pastDeadlineHeading">
+                <button class="accordion-button " type="button" data-bs-toggle="collapse" data-bs-target="#pastDeadline" aria-expanded="true" aria-controls="pastDeadline">
+                    <h6 class="bi bi-exclamation-triangle-fill alert alert-danger">
+                        Past Deadline
+                    </h6>
+                </button>
+            </h2>
+            <div id="pastDeadline" class="accordion-collapse collapse show" aria-labelledby="pastDeadlineHeading" data-bs-parent="#tasksAccordion">
+                <div class="accordion-body">
+                    <div class="row row-cols-1 g-3">
+                        @foreach (var task in tasks.Where(t => t.IsOverdue))
+                        {
+                            <div class="col">
+                                <div @onclick="@(() => GoToPipeline(task.PipelineId))">
+                                    <div class="card border-danger">
+                                        <div class="card-body" onClick="@(() => GoToPipeline(task.PipelineId))">
+                                            <h5 class="card-title">@task.Description</h5>
+                                            <h6 class="card-subtitle mb-2 text-muted" onClick="@(() => GoToPipeline(task.PipelineId))">Pipeline: @task.PipelineName</h6>
+                                            <p class="card-text">
+                                                <strong>Created:</strong> @task.CreatedDate.ToShortDateString()<br/>
+                                                <strong>Deadline:</strong> @task.Deadline.ToShortDateString()
+                                            </p>
+                                            <button @onclick="@(() => GoToPipeline(task.PipelineId))">GOTO</button>
+                                            <span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Overdue</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    
+    <!-- Close to Deadline Section -->
+    @if (tasks.Any(t => t.IsCloseToDeadline))
+    {
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="closeToDeadlineHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#closeToDeadline" aria-expanded="false" aria-controls="closeToDeadline">
+                    <h6 class="bi bi-exclamation-circle-fill alert alert-warning">
+                        Close To Deadline
+                    </h6>
+                </button>
+            </h2>
+            <div id="closeToDeadline" class="accordion-collapse collapse" aria-labelledby="closeToDeadlineHeading" data-bs-parent="#tasksAccordion">
+                <div class="accordion-body">
+                    <div class="row row-cols-1 g-3">
+                        @foreach (var task in tasks.Where(t => t.IsCloseToDeadline))
+                        {
+                            <div class="col">
+                                <div class="card border-warning">
+                                    <div class="card-body">
                                         <h5 class="card-title">@task.Description</h5>
-                                        <h6 class="card-subtitle mb-2 text-muted" onClick="@(() => GoToPipeline(task.PipelineId))">Pipeline: @task.PipelineName</h6>
+                                        <h6 class="card-subtitle mb-2 text-muted">Pipeline: @task.PipelineName</h6>
                                         <p class="card-text">
                                             <strong>Created:</strong> @task.CreatedDate.ToShortDateString()<br/>
                                             <strong>Deadline:</strong> @task.Deadline.ToShortDateString()
                                         </p>
-                                        <button @onclick="@(() => GoToPipeline(task.PipelineId))">GOTO</button>
-                                        <span class="badge bg-danger"><i class="bi bi-exclamation-triangle"></i> Overdue</span>
+                                        <span class="badge bg-warning text-dark">Close to Deadline</span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    }
-                </div>
-                }
-                else
-                {
-                <p class="text-muted">No tasks past the deadline.</p>
-                }
-            </div>
-        </div>
-    </div>
-
-    <!-- Close to Deadline Section -->
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="closeToDeadlineHeading">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#closeToDeadline" aria-expanded="false" aria-controls="closeToDeadline">
-                Close to Deadline
-            </button>
-        </h2>
-        <div id="closeToDeadline" class="accordion-collapse collapse" aria-labelledby="closeToDeadlineHeading" data-bs-parent="#tasksAccordion">
-            <div class="accordion-body">
-                @if (tasks.Any(t => t.IsCloseToDeadline))
-                {
-                <div class="row row-cols-1 g-3">
-                    @foreach (var task in tasks.Where(t => t.IsCloseToDeadline))
-                    {
-                    <div class="col">
-                        <div class="card border-warning">
-                            <div class="card-body">
-                                <h5 class="card-title">@task.Description</h5>
-                                <h6 class="card-subtitle mb-2 text-muted">Pipeline: @task.PipelineName</h6>
-                                <p class="card-text">
-                                    <strong>Created:</strong> @task.CreatedDate.ToShortDateString()<br />
-                                    <strong>Deadline:</strong> @task.Deadline.ToShortDateString()
-                                </p>
-                                <span class="badge bg-warning text-dark">Close to Deadline</span>
-                            </div>
-                        </div>
+                        }
                     </div>
-                    }
                 </div>
-                }
-                else
-                {
-                <p class="text-muted">No tasks close to the deadline.</p>
-                }
             </div>
         </div>
-    </div>
+    }
 
     <!-- Other Tasks Section -->
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="otherTasksHeading">
-            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#otherTasks" aria-expanded="false" aria-controls="otherTasks">
-                Other Tasks
-            </button>
-        </h2>
-        <div id="otherTasks" class="accordion-collapse collapse" aria-labelledby="otherTasksHeading" data-bs-parent="#tasksAccordion">
-            <div class="accordion-body">
-                @if (tasks.Any(t => !t.IsOverdue && !t.IsCloseToDeadline))
-                {
-                <div class="row row-cols-1 g-3">
-                    @foreach (var task in tasks.Where(t => !t.IsOverdue && !t.IsCloseToDeadline))
-                    {
-                    <div class="col">
-                        <div class="card border-secondary">
-                            <div class="card-body">
-                                <h5 class="card-title">@task.Description</h5>
-                                <h6 class="card-subtitle mb-2 text-muted">Pipeline: @task.PipelineName</h6>
-                                <p class="card-text">
-                                    <strong>Created:</strong> @task.CreatedDate.ToShortDateString()<br />
-                                    <strong>Deadline:</strong> @task.Deadline.ToShortDateString()
-                                </p>
+    @if (tasks.Any(t => !t.IsOverdue && !t.IsCloseToDeadline))
+    {
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="otherTasksHeading">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#otherTasks" aria-expanded="false" aria-controls="otherTasks">
+                    <h6 class="bi bi-info-circle-fill alert alert-info">
+                        My Tasks
+                    </h6>
+                </button>
+            </h2>
+            <div id="otherTasks" class="accordion-collapse collapse" aria-labelledby="otherTasksHeading" data-bs-parent="#tasksAccordion">
+                <div class="accordion-body">
+                    <div class="row row-cols-1 g-3">
+                        @foreach (var task in tasks.Where(t => !t.IsOverdue && !t.IsCloseToDeadline))
+                        {
+                            <div class="col">
+                                <div class="card border-secondary">
+                                    <div class="card-body">
+                                        <h5 class="card-title">@task.Description</h5>
+                                        <h6 class="card-subtitle mb-2 text-muted">Pipeline: @task.PipelineName</h6>
+                                        <p class="card-text">
+                                            <strong>Created:</strong> @task.CreatedDate.ToShortDateString()<br/>
+                                            <strong>Deadline:</strong> @task.Deadline.ToShortDateString()
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        }
                     </div>
-                    }
                 </div>
-                }
-                else
-                {
-                <p class="text-muted">No other tasks.</p>
-                }
             </div>
         </div>
-    </div>
+    }
 </div>
 
 

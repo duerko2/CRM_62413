@@ -1,16 +1,103 @@
+@using RolesAndPermissions
+@inject IUserAccessManager UserAccessManager;
+
+@if(UserAccessManager.HasPermission(FoundUserContext.User, "ManagerDashboard"))
+{
+    <h1>Manager Dashboard</h1>
+}
+else if(UserAccessManager.HasPermission(UserContext.User, "UserDashboard"))
+{
+    <h1>Employee Dashboard</h1>
+}
+<hr/>
+
+@if(UserAccessManager.HasPermission(UserContext.User, "ManagerDashboard"))
+{
+    <h3>Campaign funnel</h3>
+    <h6>Overview of campaign progress and pipeline status for whole team</h6>
+}
+else if(UserAccessManager.HasPermission(UserContext.User, "UserDashboard"))
+{
+    <h3>My Campaign funnel</h3>
+}
+
+
+<div class="d-flex flex-row-reverse">
+    <InputSelect class="form-select w-auto" @bind-Value="selectedCamapaignId" @bind-Value:after="OnChange">
+        <option disabled>Select campaign</option>
+        @foreach (var campaign in availableCampaigns)
+        {
+        <option value="@campaign.Id">@campaign.Name</option>
+        }
+    </InputSelect>
+</div>
 <Funnel FunnelData="funnelData" />
+
+<hr/>
+
+@if(UserAccessManager.HasPermission(UserContext.User, "ManagerDashboard"))
+{
+    <h3>Task Tracker</h3>
+    <h6>Review and monitor team tasks</h6>
+}
+else if(UserAccessManager.HasPermission(UserContext.User, "UserDashboard"))
+{
+    <h3>My Tasks</h3>
+}
+
 <TasksList/>
 
 @code {
-    private FunnelView funnelData = new FunnelView
+    [CascadingParameter] private UserContext UserContext { get; set; }
+    private UserContext FoundUserContext { get; set; }
+
+    private class AvailableCampaigns
     {
-        CampaignName = "Spring Campaign",
-        Stages = new List<FunnelViewStage>
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+
+    private string selectedCamapaignId = "3";
+    private List<AvailableCampaigns> availableCampaigns = new List<AvailableCampaigns>
+    {
+        new AvailableCampaigns { Id = 3, Name = "One" },
+        new AvailableCampaigns { Id = 4, Name = "Two" },
+        new AvailableCampaigns { Id = 5, Name = "Inactive" },
+        new AvailableCampaigns { Id = 6, Name = "Completed" },
+        new AvailableCampaigns { Id = 7, Name = "Archived" },
+    };
+    private FunnelView funnelData;
+
+    protected override async Task OnInitializedAsync()
+    {
+        FoundUserContext = UserContext;
+        funnelData = new FunnelView
         {
-            new FunnelViewStage { StageName = "Awareness", Count = 150 },
+            Stages = new List<FunnelViewStage>
+            {
+                new FunnelViewStage { StageName = "Awareness", Count = 150 },
+                new FunnelViewStage { StageName = "Interest", Count = 90 },
+                new FunnelViewStage { StageName = "Decision", Count = 30 },
+                new FunnelViewStage { StageName = "Action", Count = 10 },
+                new FunnelViewStage { StageName = "Last", Count = 5 },
+            }
+        };
+    }
+
+    private void OnChange()
+    {
+        Console.WriteLine(selectedCamapaignId);
+        funnelData = new FunnelView {
+            Stages = new List<FunnelViewStage>
+        {
+            new FunnelViewStage { StageName = "Awareness", Count = new Random().Next() },
             new FunnelViewStage { StageName = "Interest", Count = 90 },
             new FunnelViewStage { StageName = "Decision", Count = 30 },
             new FunnelViewStage { StageName = "Action", Count = 10 },
+            new FunnelViewStage { StageName = "Last", Count = 5 },
         }
-    };
+        };
+        Console.WriteLine("changed");
+        StateHasChanged();
+    }
 }

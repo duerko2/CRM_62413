@@ -35,7 +35,6 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
     {
         try
         {
-
             if (_user == default)
             {
                 cts = new CancellationTokenSource(1500);
@@ -66,7 +65,7 @@ public class CustomAuthStateProvider : AuthenticationStateProvider
         }
         catch (SqlException e)
         {
-            throw new Exception("Error during authentication: " + "" + "Try again in 30 seconds");
+            return new AuthenticationState(_anonymous);
         }
     }
 

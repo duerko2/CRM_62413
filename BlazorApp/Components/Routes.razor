@@ -1,10 +1,30 @@
-﻿<CascadingAuthenticationState>
-    <CascadingUserContext>
-        <Router AppAssembly="typeof(Program).Assembly">
-            <Found Context="routeData">
-                <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)"/>
-                <FocusOnNavigate RouteData="routeData" Selector="h1"/>
-            </Found>
-        </Router>
-    </CascadingUserContext>
-</CascadingAuthenticationState>
+﻿@using Microsoft.Data.SqlClient
+<ErrorBoundary>
+
+    <ChildContent>
+        <CascadingAuthenticationState>
+            <CascadingUserContext>
+                <Router AppAssembly="typeof(Program).Assembly">
+                    <Found Context="routeData">
+                        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+                        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+                    </Found>
+                </Router>
+            </CascadingUserContext>
+        </CascadingAuthenticationState>
+    </ChildContent>
+    <ErrorContent Context="Exception">
+        @if (Exception is SqlException)
+        {
+            <div class="alert alert-warning">
+                Error retrieving data. Try again in 30 seconds
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-danger">
+                Something went horribly wrong. @Exception.StackTrace
+            </div>
+        }
+    </ErrorContent>
+</ErrorBoundary>

@@ -1,53 +1,59 @@
 @page "/company-settings"
-@using System.ComponentModel.DataAnnotations
-@using System.Security.Claims
-@using BlazorApp.Models
-@using BlazorApp.Services
 @using RolesAndPermissions
 @inject IUserAccessManager UserAccessManager;
 @inject CompanySettingsService CompanySettingsService;
 
-@if(UserAccessManager.HasPermission(UserContext.Result.User, "EditCompany"))
-{
-    <h3>CompanySettings</h3>
-    @if (!string.IsNullOrEmpty(_errorMessage))
+<AuthorizeView>
+<Authorized Context="another_name">
+    @if(UserAccessManager.HasPermission(UserContext.User, "EditCompany"))
     {
-        <p style="color:red">@_errorMessage</p>
+        <h3>CompanySettings</h3>
+        @if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <p style="color:red">@_errorMessage</p>
+        }
+        <EditForm Model="_newUser" OnValidSubmit="HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div>
+                <label for="email">E-mail:</label>
+                <InputText id="email" @bind-Value="_newUser.Email" />
+            </div>
+            <div>
+                <label for="role">Role:</label>
+                <InputSelect id="role" @bind-Value="_newUser.Role">
+                    <option value="Manager">Manager</option>
+                    <option value="User">User</option>
+                </InputSelect>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Add User</button>
+        </EditForm>
     }
-    <EditForm Model="_newUser" OnValidSubmit="HandleValidSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-
-        <div>
-            <label for="email">E-mail:</label>
-            <InputText id="email" @bind-Value="_newUser.Email" />
-        </div>
-        <div>
-            <label for="role">Role:</label>
-            <InputSelect id="role" @bind-Value="_newUser.Role">
-                <option value="Manager">Manager</option>
-                <option value="User">User</option>
-            </InputSelect>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Add User</button>
-    </EditForm>
-}
-else
-{
-    <p>You do not have permission to view this page.</p>
-}
+    else
+    {
+        <p>You do not have permission to view this page.</p>
+    }
+</Authorized>
+</AuthorizeView>
 
 @code {
     private NewUser _newUser = new NewUser();
     private string _errorMessage = "";
 
-    [CascadingParameter] private Task<UserContext> UserContext { get; set; }
+    [CascadingParameter] private UserContext UserContext { get; set; }
+    
+    protected override async Task OnInitializedAsync()
+    {
+        Thread.Sleep(100);
+    }
+    
     private async Task HandleValidSubmit()
     {
         try
         {
-            CompanySettingsService.AddUserToCompany(_newUser, (await UserContext).UserId);
+            CompanySettingsService.AddUserToCompany(_newUser, UserContext.UserId);
         } catch (Exception ex)
         {
             _errorMessage = ex.Message;

@@ -2,7 +2,6 @@ namespace BlazorApp.Models;
 
 public class FunnelView
 {
-    public string CampaignName { get; set; }
     public List<FunnelViewStage> Stages { get; set; }
 }
 
