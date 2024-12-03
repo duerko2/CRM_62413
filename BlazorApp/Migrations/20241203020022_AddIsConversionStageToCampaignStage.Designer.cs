@@ -4,6 +4,7 @@ using BlazorApp.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorApp.Migrations
 {
     [DbContext(typeof(CrmDbContext))]
-    partial class CrmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241203020022_AddIsConversionStageToCampaignStage")]
+    partial class AddIsConversionStageToCampaignStage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,7 +54,7 @@ namespace BlazorApp.Migrations
 
                     b.HasIndex("PipelineId");
 
-                    b.ToTable("ActivityLogs", (string)null);
+                    b.ToTable("ActivityLogs");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Campaign", b =>
@@ -68,7 +71,7 @@ namespace BlazorApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Campaigns", (string)null);
+                    b.ToTable("Campaigns");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.CampaignStage", b =>
@@ -99,7 +102,7 @@ namespace BlazorApp.Migrations
 
                     b.HasIndex("CampaignId");
 
-                    b.ToTable("CampaignStages", (string)null);
+                    b.ToTable("CampaignStages");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Company", b =>
@@ -116,7 +119,7 @@ namespace BlazorApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Companies", (string)null);
+                    b.ToTable("Companies");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Contact", b =>
@@ -153,7 +156,7 @@ namespace BlazorApp.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Contacts", (string)null);
+                    b.ToTable("Contacts");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.ContactComment", b =>
@@ -178,7 +181,7 @@ namespace BlazorApp.Migrations
 
                     b.HasIndex("ContactId");
 
-                    b.ToTable("ContactComments", (string)null);
+                    b.ToTable("ContactComments");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Person", b =>
@@ -208,7 +211,7 @@ namespace BlazorApp.Migrations
 
                     b.HasIndex("ContactId");
 
-                    b.ToTable("Persons", (string)null);
+                    b.ToTable("Persons");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.Pipeline", b =>
@@ -239,7 +242,7 @@ namespace BlazorApp.Migrations
 
                     b.HasIndex("ContactId");
 
-                    b.ToTable("Pipelines", (string)null);
+                    b.ToTable("Pipelines");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.PipelineComment", b =>
@@ -267,7 +270,7 @@ namespace BlazorApp.Migrations
 
                     b.HasIndex("PipelineId");
 
-                    b.ToTable("PipelineComments", (string)null);
+                    b.ToTable("PipelineComments");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.PipelineTask", b =>
@@ -305,7 +308,7 @@ namespace BlazorApp.Migrations
 
                     b.HasIndex("PipelineId");
 
-                    b.ToTable("PipelineTask", (string)null);
+                    b.ToTable("PipelineTask");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.User", b =>
@@ -347,7 +350,7 @@ namespace BlazorApp.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.UserInvitation", b =>
@@ -373,7 +376,7 @@ namespace BlazorApp.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("UserInvitations", (string)null);
+                    b.ToTable("UserInvitations");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.UserSession", b =>
@@ -398,7 +401,7 @@ namespace BlazorApp.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserSessions", (string)null);
+                    b.ToTable("UserSessions");
                 });
 
             modelBuilder.Entity("BlazorApp.Persistence.Entities.ActivityLog", b =>
