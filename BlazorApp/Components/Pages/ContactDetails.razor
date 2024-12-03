@@ -13,15 +13,15 @@
 <button class="btn btn-link" @onclick="GoBack" style="font-size:24px;">
     &#8592; Back
 </button>
+
 <div class="container-fluid">
     <!-- Fixed Bottom Success Message -->
     @if (!string.IsNullOrEmpty(message))
     {
-    <div class="alert alert-success text-center fixed-bottom mx-auto" role="alert" style="max-width: 400px;">
-        @message
-    </div>
+        <div class="alert alert-success text-center fixed-bottom mx-auto" role="alert" style="max-width: 400px;">
+            @message
+        </div>
     }
-    <!-- Rest of the existing markup... -->
 </div>
 
 <div class="container-fluid">
@@ -31,122 +31,108 @@
             <h2>@contact.Name (ID: @contact.Id)</h2>
         </div>
     </div>
+
     <!-- Main Content Row -->
     <div class="row">
         <!-- Left Column (Activity Timeline) -->
         <div class="col-md-3">
             <!-- Activity Timeline Section -->
             <div class="card mb-3">
-                <div class="card-header">
-                    Activity Timeline
+                <div class="card-header" style="cursor: pointer;" @onclick="() => isActivityTimelineCollapsed = !isActivityTimelineCollapsed">
+                    <span>Activity Timeline</span>
+                    <span class="float-right">@GetCollapseIcon(isActivityTimelineCollapsed)</span>
                 </div>
-                <div class="card-body">
-                    @if (contact.Activities != null && contact.Activities.Any())
-                    {
+                @if (!isActivityTimelineCollapsed)
+                {
+                    <div class="card-body">
+                        @if (contact.Activities != null && contact.Activities.Any())
+                        {
                             <ul class="timeline">
-                            @foreach (var activity in contact.Activities.OrderByDescending(a => a.Date))
-                            {
-                                        <li>
-                                            <span class="timeline-date">@activity.Date.ToString("dd/MM/yyyy")</span>
-                                            <div class="timeline-content">
-                                        @activity.Description
-                                            </div>
-                                        </li>
-                            }
+                                @foreach (var activity in contact.Activities.OrderByDescending(a => a.Date))
+                                {
+                                    <li>
+                                        <span class="timeline-date">@activity.Date.ToString("dd/MM/yyyy")</span>
+                                        <div class="timeline-content">
+                                            @activity.Description
+                                        </div>
+                                    </li>
+                                }
                             </ul>
-                    }
-                    else
-                    {
+                        }
+                        else
+                        {
                             <p>No activities available.</p>
-                    }
-                </div>
+                        }
+                    </div>
+                }
             </div>
         </div>
-        <!-- Middle Column -->
+
+        <!-- Middle Column (Add Comment and Latest Comment) -->
         <div class="col-md-6">
-            <!-- Active Pipelines Section -->
-            <div class="card mb-3">
-                <div class="card-header">
-                    Active Pipelines
-                </div>
-                <div class="card-body">
-                    @if (contact.Pipelines != null && contact.Pipelines.Any())
-                    {
-                            <ul class="list-group">
-                            @foreach (var pipeline in contact.Pipelines)
-                            {
-                                var campaign = CampaignService.GetCampaignById(pipeline.CampaignId);
-
-                                        <li class="list-group-item">
-                                            <a href="@($"/pipeline/{pipeline.Id}")">
-                                        @campaign.Name
-                                            </a>
-                                        </li>
-                            }
-                            </ul>
-                    }
-                    else
-                    {
-                            <p>No active pipelines.</p>
-                    }
-                </div>
-            </div>
-
             <!-- Add Comment Section -->
-            <div class="card">
-                <div class="card-header">
-                    Add Comment
+            <div class="card mb-3">
+                <div class="card-header" style="cursor: pointer;" @onclick="() => isAddCommentCollapsed = !isAddCommentCollapsed">
+                    <span>Add Comment</span>
+                    <span class="float-right">@GetCollapseIcon(isAddCommentCollapsed)</span>
                 </div>
-                <div class="card-body">
-                    <textarea class="form-control" @bind="newCommentText" rows="3"></textarea>
-                </div>
-                <div class="card-footer text-right">
-                    <button class="btn btn-primary" @onclick="AddComment">Add Comment</button>
-                </div>
+                @if (!isAddCommentCollapsed)
+                {
+                    <div class="card-body">
+                        <textarea class="form-control" @bind="newCommentText" rows="3"></textarea>
+                    </div>
+                    <div class="card-footer text-right">
+                        <button class="btn btn-primary" @onclick="AddComment">Add Comment</button>
+                    </div>
+                }
             </div>
             <!-- Display Latest Comment -->
             @if (contact.Comments != null && contact.Comments.Any())
             {
-                    <div class="mt-3">
-                        <h5>Latest Comment:</h5>
-                        <div class="card">
-                            <div class="card-body">
-                                <p>@contact.Comments.First().Text</p>
-                                <small class="text-muted">@contact.Comments.First().Date.ToString("g")</small>
-                            </div>
+                <div class="mt-3">
+                    <h5>Latest Comment:</h5>
+                    <div class="card">
+                        <div class="card-body">
+                            <p>@contact.Comments.First().Text</p>
+                            <small class="text-muted">@contact.Comments.First().Date.ToString("g")</small>
                         </div>
                     </div>
+                </div>
             }
         </div>
+
         <!-- Right Column: Info Section -->
         <div class="col-md-3">
             <!-- Info Section -->
             <div class="card">
-                <div class="card-header">
-                    Info
+                <div class="card-header" style="cursor: pointer;" @onclick="() => isInfoSectionCollapsed = !isInfoSectionCollapsed">
+                    <span>Info</span>
+                    <span class="float-right">@GetCollapseIcon(isInfoSectionCollapsed)</span>
                 </div>
-                <div class="card-body">
-                    <!-- Editable Fields -->
-                    <div class="form-group">
-                        <label>Company Name</label>
-                        <input class="form-control" @bind="contact.Company" />
-                    </div>
-                    <div class="form-group">
-                        <label>Address</label>
-                        <input class="form-control" @bind="contact.Address" />
-                    </div>
-                    <div class="form-group">
-                        <label>Type</label>
-                        <select class="form-control" @bind="contact.Type">
-                            <option value="Lead">Lead</option>
-                            <option value="Customer">Customer</option>
-                        </select>
-                    </div>
-                    <!-- Contact Persons -->
-                    <div class="form-group">
-                        <label>Contact Persons</label>
-                        @foreach (var person in contact.Persons)
-                        {
+                @if (!isInfoSectionCollapsed)
+                {
+                    <div class="card-body">
+                        <!-- Editable Fields -->
+                        <div class="form-group">
+                            <label>Company Name</label>
+                            <input class="form-control" @bind="contact.Company" />
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input class="form-control" @bind="contact.Address" />
+                        </div>
+                        <div class="form-group">
+                            <label>Type</label>
+                            <select class="form-control" @bind="contact.Type">
+                                <option value="Lead">Lead</option>
+                                <option value="Customer">Customer</option>
+                            </select>
+                        </div>
+                        <!-- Contact Persons -->
+                        <div class="form-group">
+                            <label>Contact Persons</label>
+                            @foreach (var person in contact.Persons)
+                            {
                                 <div class="card mb-2">
                                     <div class="card-body">
                                         <div class="form-group">
@@ -164,13 +150,113 @@
                                         <button class="btn btn-danger btn-sm" @onclick="() => RemoveContactPerson(person)">Remove</button>
                                     </div>
                                 </div>
-                        }
-                        <button class="btn btn-secondary" @onclick="AddContactPerson">Add Contact Person</button>
+                            }
+                            <button class="btn btn-secondary" @onclick="AddContactPerson">Add Contact Person</button>
+                        </div>
                     </div>
+                    <div class="card-footer text-right">
+                        <button class="btn btn-primary" @onclick="SaveContact">Save</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- New Row for Pipeline Sections -->
+    <div class="row mt-4">
+        <!-- Active Pipelines Section -->
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header" style="cursor: pointer;" @onclick="() => isActivePipelinesCollapsed = !isActivePipelinesCollapsed">
+                    <span>Active Pipelines (@activePipelines.Count)</span>
+                    <span class="float-right">@GetCollapseIcon(isActivePipelinesCollapsed)</span>
                 </div>
-                <div class="card-footer text-right">
-                    <button class="btn btn-primary" @onclick="SaveContact">Save</button>
+                @if (!isActivePipelinesCollapsed)
+                {
+                    <div class="card-body">
+                        @if (activePipelines != null && activePipelines.Any())
+                        {
+                            <ul class="list-group">
+                                @foreach (var pipeline in activePipelines)
+                                {
+                                    <li class="list-group-item">
+                                        <a href="@($"/pipeline/{pipeline.Id}")">
+                                            @campaignNames[pipeline.CampaignId]
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p>No active pipelines.</p>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Won Pipelines Section -->
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header" style="cursor: pointer;" @onclick="() => isWonPipelinesCollapsed = !isWonPipelinesCollapsed">
+                    <span>Won Pipelines (@wonPipelines.Count)</span>
+                    <span class="float-right">@GetCollapseIcon(isWonPipelinesCollapsed)</span>
                 </div>
+                @if (!isWonPipelinesCollapsed)
+                {
+                    <div class="card-body">
+                        @if (wonPipelines != null && wonPipelines.Any())
+                        {
+                            <ul class="list-group">
+                                @foreach (var pipeline in wonPipelines)
+                                {
+                                    <li class="list-group-item">
+                                        <a href="@($"/pipeline/{pipeline.Id}")">
+                                            @campaignNames[pipeline.CampaignId]
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p>No won pipelines.</p>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Lost Pipelines Section -->
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header" style="cursor: pointer;" @onclick="() => isLostPipelinesCollapsed = !isLostPipelinesCollapsed">
+                    <span>Lost Pipelines (@lostPipelines.Count)</span>
+                    <span class="float-right">@GetCollapseIcon(isLostPipelinesCollapsed)</span>
+                </div>
+                @if (!isLostPipelinesCollapsed)
+                {
+                    <div class="card-body">
+                        @if (lostPipelines != null && lostPipelines.Any())
+                        {
+                            <ul class="list-group">
+                                @foreach (var pipeline in lostPipelines)
+                                {
+                                    <li class="list-group-item">
+                                        <a href="@($"/pipeline/{pipeline.Id}")">
+                                            @campaignNames[pipeline.CampaignId]
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <p>No lost pipelines.</p>
+                        }
+                    </div>
+                }
             </div>
         </div>
     </div>
@@ -184,21 +270,21 @@
         position: relative;
     }
 
-    .timeline::before {
-        content: '';
-        position: absolute;
-        left: 15px;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: #dee2e6;
-    }
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
 
-    .timeline li {
-        position: relative;
-        padding-left: 40px;
-        margin-bottom: 20px;
-    }
+        .timeline li {
+            position: relative;
+            padding-left: 40px;
+            margin-bottom: 20px;
+        }
 
     .timeline-date {
         font-weight: bold;
@@ -227,15 +313,31 @@
 @code {
     [Parameter]
     public int Id { get; set; }
-    
+
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
 
     private Contact contact;
     private string newCommentText;
     private ContactType previousType;
-    
+
     private string message;
     private Timer timer;
+
+    // Collapse state variables
+    private bool isActivityTimelineCollapsed = false;
+    private bool isAddCommentCollapsed = false;
+    private bool isInfoSectionCollapsed = false;
+    private bool isActivePipelinesCollapsed = false;
+    private bool isWonPipelinesCollapsed = false;
+    private bool isLostPipelinesCollapsed = false;
+
+    // New lists for categorized pipelines
+    private List<PipelineModel> activePipelines;
+    private List<PipelineModel> wonPipelines;
+    private List<PipelineModel> lostPipelines;
+
+    // Mapping of CampaignId to CampaignName
+    private Dictionary<int, string> campaignNames;
 
     protected override void OnInitialized()
     {
@@ -269,6 +371,20 @@
 
         // Store the initial type
         previousType = contact.Type;
+
+        // Categorize pipelines
+        activePipelines = contact.Pipelines.Where(p => p.Status == "Active").ToList();
+        wonPipelines = contact.Pipelines.Where(p => p.Status == "Won").ToList();
+        lostPipelines = contact.Pipelines.Where(p => p.Status == "Lost").ToList();
+
+        // Fetch all campaign IDs used in pipelines
+        var campaignIds = contact.Pipelines.Select(p => p.CampaignId).Distinct();
+
+        // Fetch campaign names for these IDs
+        campaignNames = campaignIds.ToDictionary(
+            id => id,
+            id => CampaignService.GetCampaignById(id)?.Name ?? "Unknown Campaign"
+        );
     }
 
     private void GoBack()
@@ -301,7 +417,7 @@
             // Update the previous type
             previousType = contact.Type;
         }
-        
+
         var authState = await AuthenticationStateTask;
         var user = authState.User;
         var userId = user.FindFirst(ClaimTypes.NameIdentifier).Value;
@@ -310,24 +426,23 @@
         ContactService.SaveContact(contact, userIdInt);
         message = "Contact saved successfully.";
         StartTimer();
-        
     }
 
     private void AddComment()
     {
         if (string.IsNullOrWhiteSpace(newCommentText))
             return;
-        
-            var comment = new ContactComment
-                {
-                    Date = DateTime.Now,
-                    Text = newCommentText,
-                    ContactId = contact.Id,
-                    Contact = contact
-                };
-            
+
+        var comment = new ContactComment
+            {
+                Date = DateTime.Now,
+                Text = newCommentText,
+                ContactId = contact.Id,
+                Contact = contact
+            };
+
         contact.Comments.Insert(0, comment); // Add to the beginning
-        
+
         comment.Id = CommentService.AddComment(comment);
 
         // Add the comment to the activity timeline
@@ -341,7 +456,7 @@
         newCommentText = "";
         StartTimer();
     }
-    
+
     private void StartTimer()
     {
         timer?.Dispose();
@@ -350,5 +465,10 @@
             message = null;
             InvokeAsync(StateHasChanged); // Re-render the component
         }, null, 3000, System.Threading.Timeout.Infinite);
+    }
+
+    private string GetCollapseIcon(bool isCollapsed)
+    {
+        return isCollapsed ? "▼" : "▲";
     }
 }

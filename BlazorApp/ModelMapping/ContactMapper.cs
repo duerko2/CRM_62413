@@ -85,6 +85,7 @@ public class ContactMapper
             CampaignId = p.CampaignId,
             ContactId = p.ContactId,
             ActiveStage = p.ActiveStage,
+            Status = p.Status,
             Tasks = p.Tasks != null ? p.Tasks.Select(TaskMapper.MapToModel).ToList() : new List<TaskModel>()
         }).ToList();
     }
