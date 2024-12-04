@@ -35,7 +35,6 @@ internal class Program
         
         // Add services to the container.
         builder.Services.AddScoped<ContactService>();
-        builder.Services.AddScoped<SideMenuService>();
         builder.Services.AddScoped<CommentService>();
         builder.Services.AddScoped<CampaignService>();
         builder.Services.AddScoped<PipelineService>();

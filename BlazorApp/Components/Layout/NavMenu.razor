@@ -1,11 +1,10 @@
 ﻿@using BlazorApp.Services
 @using RolesAndPermissions
-@inject SideMenuService MenuService
 @inject IUserAccessManager UserAccessManager;
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">BlazorApp</a>
+        <a class="navbar-brand" href="">CRM Blazor App</a>
     </div>
 </div>
 
@@ -13,108 +12,116 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-column">
+        <!-- Home Section -->
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="bi bi-house-door-fill nav-menu-icon" aria-hidden="true"></span> Home
             </NavLink>
         </div>
 
-        <div class="nav-item px-3">
-
-        </div>
-
         <AuthorizeView>
             <Authorized>
+                <!-- Contacts Section Signifier -->
+                <div class="menu-section px-3">
+                    <span class="section-title">Contacts</span>
+                </div>
+
+                <!-- Contacts Menu Items -->
                 <div class="nav-item px-3">
-                    <NavLink class="nav-link" @onclick="MenuService.ToggleContactsMenu" href="/contacts">
-                        <span class="bi bi-people-fill nav-menu-icon" aria-hidden="true"></span> Contacts
+                    <NavLink class="nav-link" href="/contacts">
+                        <span class="bi bi-people-fill nav-menu-icon" aria-hidden="true"></span> All Contact
                     </NavLink>
                 </div>
 
-                @if (MenuService.IsContactsExpanded)
-                {
-                    <ul class="sub-menu">
-                        <li class="nav-item px-3">
-                            <NavLink class="nav-link" href="newcontact">
-                                <span class="bi bi-person-plus-fill nav-menu-icon" aria-hidden="true"></span> New Contact
-                            </NavLink>
-                        </li>
-                    </ul>
-                }
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/newcontact">
+                        <span class="bi bi-person-plus-fill nav-menu-icon" aria-hidden="true"></span> Add New Contact
+                    </NavLink>
+                </div>
 
+                <!-- Campaigns Section Signifier -->
+                <div class="menu-section px-3">
+                    <span class="section-title">Campaigns</span>
+                </div>
+
+                <!-- Campaigns Menu Items -->
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/campaigns">
-                        <span class="bi bi-bar-chart-fill nav-menu-icon" aria-hidden="true"></span> Campaigns
+                        <span class="bi bi-bar-chart-fill nav-menu-icon" aria-hidden="true"></span> All Campaign
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/newcampaign">
-                        <span class="bi bi-bar-chart-fill nav-menu-icon" aria-hidden="true"></span> New campaign
+                        <span class="bi bi-bar-chart-fill nav-menu-icon" aria-hidden="true"></span> Add New Campaign
                     </NavLink>
                 </div>
 
+                <!-- Pipelines Section Signifier -->
+                <div class="menu-section px-3">
+                    <span class="section-title">Pipelines</span>
+                </div>
+
+                <!-- Pipelines Menu Items -->
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/pipelines">
-                        <span class="bi bi-bar-chart-fill nav-menu-icon" aria-hidden="true"></span> Pipelines
+                        <span class="bi bi-bar-chart-fill nav-menu-icon" aria-hidden="true"></span> All Pipelines
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/newpipeline">
-                        <span class="bi bi-bar-chart-fill nav-menu-icon" aria-hidden="true"></span> New pipeline
+                        <span class="bi bi-bar-chart-fill nav-menu-icon" aria-hidden="true"></span> Add New Pipeline
                     </NavLink>
                 </div>
-                @if(UserAccessManager.HasPermission(AuthenticationStateTask.Result.User, "EditCompany"))
+
+                <!-- Company Settings Section (Conditional) -->
+                @if (UserAccessManager.HasPermission(AuthenticationStateTask.Result.User, "EditCompany"))
                 {
+                    <div class="menu-section px-3">
+                        <span class="section-title">Company</span>
+                    </div>
+
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="/company-settings">
                             <span class="bi bi-person-fill nav-menu-icon" aria-hidden="true"></span> Company
                         </NavLink>
                     </div>
                 }
-
             </Authorized>
         </AuthorizeView>
     </nav>
 </div>
 
-@code{
+@code {
     [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; }
 }
 
 <style>
-    .sub-menu {
-        padding-left: 20px; /* Reduce indentation */
-        margin-top: -40px; /* Remove extra margin between parent and submenu */
-        margin-bottom: -20px; /* Remove extra margin below submenus */
-        list-style-type: none; /* Remove bullet points (optional) */
+    /* Section Signifier Styling */
+    .menu-section {
+        margin-top: 20px; /* Adds space above the section */
+        margin-bottom: 10px; /* Adds space below the section */
     }
 
-    /* Adjust space between parent and submenu items */
-    .nav-item {
-        margin-bottom: 0px; /* Reduce space between main menu items */
+    .section-title {
+        font-size: 0.75em; /* Smaller font size */
+        font-weight: bold; /* Bold text */
+        color: #6c757d; /* Bootstrap's secondary text color */
+        text-transform: uppercase; /* Uppercase letters */
+        letter-spacing: 0.05em; /* Slightly increased spacing between letters */
     }
 
-        .nav-item .nav-link {
-            padding: 5px 0; /* Standard padding for parent menu items */
-        }
-
-    /* Less padding for sub-menu links */
-    .sub-menu .nav-item {
-        margin-bottom: -20px; /* Slight space between submenu items */
-    }
-
-        .sub-menu .nav-item .nav-link {
-            padding: 3px 0; /* Less padding for submenu items */
-            margin: 0; /* Ensure no extra margin for submenu items */
-        }
-
+    /* Adjusted Icon Styling */
     .nav-menu-icon {
         vertical-align: middle;
-        margin-right: 5px; /* Adds some space between the icon and text */
-        margin-left: 5px; /* Adds some space between the icon and text */
-        font-size: 1.4em; /* Adjust the icon size to be proportionate */
+        margin-right: 5px; /* Space between icon and text */
+        margin-left: 5px; /* Space before the icon */
+        font-size: 1.2em; /* Slightly smaller icon size for better alignment */
         margin-top: -25px; /* Removes some space to get the icon in line with the menu item */
+    }
+
+    .section-title:hover {
+        cursor: default; /* Prevents cursor change on hover for section titles */
     }
 </style>
