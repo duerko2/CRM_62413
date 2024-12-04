@@ -13,7 +13,7 @@ namespace BlazorApp.Services
             _campaignRepository = campaignRepository;
         }
 
-        public async Task<List<string>> AddCampaignAsync(CampaignModel campaign, int numberOfStages)
+        public List<string> AddCampaign(CampaignModel campaign, int numberOfStages)
         {
             var errors = ValidateCampaign(campaign, numberOfStages);
 
@@ -25,6 +25,7 @@ namespace BlazorApp.Services
             _campaignRepository.AddCampaign(campaign);
             return null; // No errors
         }
+
 
 
 

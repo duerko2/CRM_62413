@@ -276,11 +276,11 @@
     private DateTime newTaskCreatedDate = DateTime.Today;
     private DateTime newTaskDeadline = DateTime.Today;
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         try
         {
-            pipeline = await PipelineService.GetPipelineDetailsAsync(pipelineId);
+            pipeline = PipelineService.GetPipelineDetails(pipelineId);
             notificationMessage = null;
         }
         catch (Exception ex)
@@ -292,12 +292,12 @@
 
     private void GoBack() => NavigationManager.NavigateTo("/contacts");
 
-    private async Task TryToggleStage(string stageName)
+    private void TryToggleStage(string stageName)
     {
         try
         {
-            await PipelineService.ToggleStageAsync(pipelineId, stageName);
-            pipeline = await PipelineService.GetPipelineDetailsAsync(pipelineId);
+            PipelineService.ToggleStage(pipelineId, stageName);
+            pipeline = PipelineService.GetPipelineDetails(pipelineId);
             notificationMessage = null;
         }
         catch (InvalidOperationException ex)
@@ -311,12 +311,12 @@
         }
     }
 
-    private async Task ToggleTaskComplete(TaskModel task)
+    private void ToggleTaskComplete(TaskModel task)
     {
         try
         {
-            await PipelineService.ToggleTaskCompleteAsync(task);
-            pipeline = await PipelineService.GetPipelineDetailsAsync(pipelineId);
+            PipelineService.ToggleTaskComplete(task);
+            pipeline = PipelineService.GetPipelineDetails(pipelineId);
             notificationMessage = null;
         }
         catch (InvalidOperationException ex)
@@ -330,12 +330,12 @@
         }
     }
 
-    private async Task AddTask()
+    private void AddTask()
     {
         try
         {
-            await PipelineService.AddTaskAsync(newTaskDescription, newTaskCreatedDate, newTaskDeadline, pipelineId);
-            pipeline = await PipelineService.GetPipelineDetailsAsync(pipelineId);
+            PipelineService.AddTask(newTaskDescription, newTaskCreatedDate, newTaskDeadline, pipelineId);
+            pipeline = PipelineService.GetPipelineDetails(pipelineId);
             // Clear the input fields after adding the task
             newTaskDescription = string.Empty;
             newTaskCreatedDate = DateTime.Today;
@@ -357,11 +357,11 @@
         }
     }
 
-    private async Task EndPipelineWithWin()
+    private void EndPipelineWithWin()
     {
         try
         {
-            await PipelineService.EndPipelineWithWinAsync(pipelineId);
+            PipelineService.EndPipelineWithWin(pipelineId);
             pipeline.Status = "Won";
             notificationMessage = null;
         }
@@ -376,11 +376,11 @@
         }
     }
 
-    private async Task EndPipelineWithLoss()
+    private void EndPipelineWithLoss()
     {
         try
         {
-            await PipelineService.EndPipelineWithLossAsync(pipelineId);
+            PipelineService.EndPipelineWithLoss(pipelineId);
             pipeline.Status = "Lost";
             notificationMessage = null;
         }

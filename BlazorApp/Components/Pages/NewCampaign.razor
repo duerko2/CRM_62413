@@ -175,7 +175,7 @@
             }
         }
 
-        var errors = await CampaignService.AddCampaignAsync(newCampaignModel, numberOfStages);
+        var errors =  CampaignService.AddCampaign(newCampaignModel, numberOfStages);
 
         if (errors != null && errors.Any())
         {

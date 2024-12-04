@@ -66,11 +66,11 @@
         campaigns = PipelineService.GetAllCampaigns();
     }
 
-    private async Task AssignPipeline()
+    private void AssignPipeline()
     {
         try
         {
-            var pipelineId = await PipelineService.CreateNewPipeline(newPipelineModel);
+            var pipelineId = PipelineService.CreateNewPipeline(newPipelineModel);
             NavigationManager.NavigateTo($"/pipeline/{pipelineId}");
         }
         catch (Exception ex)

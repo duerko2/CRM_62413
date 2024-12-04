@@ -1,5 +1,8 @@
 ﻿using BlazorApp.Models;
 using BlazorApp.Repository;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace BlazorApp.Services
 {
@@ -19,7 +22,6 @@ namespace BlazorApp.Services
             _contactService = contactService;
             _campaignService = campaignService;
         }
-
 
         public void UpdatePipelineStage(int pipelineId, string newStageName)
         {
@@ -57,7 +59,6 @@ namespace BlazorApp.Services
             }
         }
 
-
         public List<ContactListRow> GetContactsForUser(int userId)
         {
             return _contactService.GetContacts(userId); // Delegated to ContactService
@@ -68,7 +69,7 @@ namespace BlazorApp.Services
             return _campaignService.GetAllCampaigns(); // Delegated to CampaignService
         }
 
-        public async Task<int> CreateNewPipeline(PipelineModel pipeline)
+        public int CreateNewPipeline(PipelineModel pipeline)
         {
             if (pipeline.CampaignId == 0 || pipeline.ContactId == 0)
             {
@@ -99,7 +100,7 @@ namespace BlazorApp.Services
             return pipeline.Id;
         }
 
-        public async Task<PipelineDetailModel> GetPipelineDetailsAsync(int pipelineId)
+        public PipelineDetailModel GetPipelineDetails(int pipelineId)
         {
             var pipeline = _pipelineRepository.GetPipeline(pipelineId);
             if (pipeline == null) throw new Exception($"Pipeline with Id {pipelineId} not found.");
@@ -133,8 +134,7 @@ namespace BlazorApp.Services
             };
         }
 
-
-        public async Task ToggleStageAsync(int pipelineId, string targetStage)
+        public void ToggleStage(int pipelineId, string targetStage)
         {
             var pipeline = _pipelineRepository.GetPipeline(pipelineId);
             if (pipeline == null) throw new Exception($"Pipeline with Id {pipelineId} not found.");
@@ -181,9 +181,7 @@ namespace BlazorApp.Services
             }
         }
 
-
-
-        public async Task ToggleTaskCompleteAsync(TaskModel task)
+        public void ToggleTaskComplete(TaskModel task)
         {
             var existingTask = _pipelineRepository.GetTaskById(task.Id);
             if (existingTask == null)
@@ -207,7 +205,7 @@ namespace BlazorApp.Services
             _pipelineRepository.UpdateTask(existingTask);
         }
 
-        public async Task AddTaskAsync(string description, DateTime createdDate, DateTime deadline, int pipelineId)
+        public void AddTask(string description, DateTime createdDate, DateTime deadline, int pipelineId)
         {
             if (string.IsNullOrWhiteSpace(description))
             {
@@ -237,7 +235,7 @@ namespace BlazorApp.Services
             _pipelineRepository.AddTask(newTask);
         }
 
-        public async Task EndPipelineWithWinAsync(int pipelineId)
+        public void EndPipelineWithWin(int pipelineId)
         {
             var pipeline = _pipelineRepository.GetPipeline(pipelineId);
             if (pipeline == null) throw new Exception($"Pipeline with Id {pipelineId} not found.");
@@ -272,8 +270,7 @@ namespace BlazorApp.Services
             _pipelineRepository.UpdatePipeline(pipeline);
         }
 
-
-        public async Task EndPipelineWithLossAsync(int pipelineId)
+        public void EndPipelineWithLoss(int pipelineId)
         {
             var pipeline = _pipelineRepository.GetPipeline(pipelineId);
             if (pipeline == null) throw new Exception($"Pipeline with Id {pipelineId} not found.");
@@ -287,9 +284,8 @@ namespace BlazorApp.Services
             pipeline.Status = "Lost";
             _pipelineRepository.UpdatePipeline(pipeline);
         }
-    
 
-    public PipelineModel GetPipelineById(int id)
+        public PipelineModel GetPipelineById(int id)
         {
             return _pipelineRepository.GetPipeline(id);
         }
