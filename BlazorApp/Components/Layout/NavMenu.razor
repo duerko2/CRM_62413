@@ -23,55 +23,58 @@
             <Authorized>
                 <!-- Contacts Section Signifier -->
                 <div class="menu-section px-3">
+                    <span class="bi bi-people-fill section-icon" aria-hidden="true"></span>
                     <span class="section-title">Contacts</span>
                 </div>
 
                 <!-- Contacts Menu Items -->
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/contacts">
-                        <span class="bi bi-people-fill nav-menu-icon" aria-hidden="true"></span> All Contact
+                        <span class="bi bi-list nav-menu-icon" aria-hidden="true"></span> All Contacts
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/newcontact">
-                        <span class="bi bi-person-plus-fill nav-menu-icon" aria-hidden="true"></span> Add New Contact
+                        <span class="bi bi-plus-circle nav-menu-icon" aria-hidden="true"></span> Add New Contact
                     </NavLink>
                 </div>
 
                 <!-- Campaigns Section Signifier -->
                 <div class="menu-section px-3">
+                    <span class="bi bi-megaphone-fill section-icon" aria-hidden="true"></span>
                     <span class="section-title">Campaigns</span>
                 </div>
 
                 <!-- Campaigns Menu Items -->
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/campaigns">
-                        <span class="bi bi-bar-chart-fill nav-menu-icon" aria-hidden="true"></span> All Campaign
+                        <span class="bi bi-list nav-menu-icon" aria-hidden="true"></span> All Campaigns
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/newcampaign">
-                        <span class="bi bi-bar-chart-fill nav-menu-icon" aria-hidden="true"></span> Add New Campaign
+                        <span class="bi bi-plus-circle nav-menu-icon" aria-hidden="true"></span> Add New Campaign
                     </NavLink>
                 </div>
 
                 <!-- Pipelines Section Signifier -->
                 <div class="menu-section px-3">
+                    <span class="bi bi-diagram-3-fill section-icon" aria-hidden="true"></span>
                     <span class="section-title">Pipelines</span>
                 </div>
 
                 <!-- Pipelines Menu Items -->
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/pipelines">
-                        <span class="bi bi-bar-chart-fill nav-menu-icon" aria-hidden="true"></span> All Pipelines
+                        <span class="bi bi-list nav-menu-icon" aria-hidden="true"></span> All Pipelines
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="/newpipeline">
-                        <span class="bi bi-bar-chart-fill nav-menu-icon" aria-hidden="true"></span> Add New Pipeline
+                        <span class="bi bi-plus-circle nav-menu-icon" aria-hidden="true"></span> Add New Pipeline
                     </NavLink>
                 </div>
 
@@ -79,12 +82,13 @@
                 @if (UserAccessManager.HasPermission(AuthenticationStateTask.Result.User, "EditCompany"))
                 {
                     <div class="menu-section px-3">
+                        <span class="bi bi-building-fill section-icon" aria-hidden="true"></span>
                         <span class="section-title">Company</span>
                     </div>
 
                     <div class="nav-item px-3">
                         <NavLink class="nav-link" href="/company-settings">
-                            <span class="bi bi-person-fill nav-menu-icon" aria-hidden="true"></span> Company
+                            <span class="bi bi-gear-fill nav-menu-icon" aria-hidden="true"></span> Company Settings
                         </NavLink>
                     </div>
                 }
@@ -100,8 +104,16 @@
 <style>
     /* Section Signifier Styling */
     .menu-section {
+        display: flex;
+        align-items: center;
         margin-top: 20px; /* Adds space above the section */
         margin-bottom: 10px; /* Adds space below the section */
+    }
+
+    .section-icon {
+        font-size: 1em; /* Adjust icon size */
+        margin-right: 8px; /* Space between icon and title */
+        color: #6c757d; /* Optional: Match the section title color */
     }
 
     .section-title {
@@ -112,12 +124,11 @@
         letter-spacing: 0.05em; /* Slightly increased spacing between letters */
     }
 
-    /* Adjusted Icon Styling */
     .nav-menu-icon {
         vertical-align: middle;
-        margin-right: 5px; /* Space between icon and text */
-        margin-left: 5px; /* Space before the icon */
-        font-size: 1.2em; /* Slightly smaller icon size for better alignment */
+        margin-right: 5px; /* Adds some space between the icon and text */
+        margin-left: 5px; /* Adds some space between the icon and text */
+        font-size: 1.2em; /* Adjust the icon size to be proportionate */
         margin-top: -25px; /* Removes some space to get the icon in line with the menu item */
     }
 
