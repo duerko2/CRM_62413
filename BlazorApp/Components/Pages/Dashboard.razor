@@ -46,7 +46,7 @@ else if(UserAccessManager.HasPermission(UserContext.User, "UserDashboard"))
     <h3>My Tasks</h3>
 }
 
-<TasksList/>
+<TasksList TaskData="tasks"/>
 
 @code {
     [CascadingParameter] private UserContext UserContext { get; set; }
@@ -55,7 +55,29 @@ else if(UserAccessManager.HasPermission(UserContext.User, "UserDashboard"))
     private List<AvailableCampaigns> availableCampaigns;
     private FunnelView funnelData;
 
+
+    private List<TaskViewModel> tasks;
+
+
     protected override async Task OnInitializedAsync()
+    {
+        InitializeCampaignData();
+        InitializeTaskData();
+    }
+
+    private void InitializeTaskData()
+    {
+        if(UserAccessManager.HasPermission(UserContext.User, "ManagerDashboard"))
+        {
+            tasks = DashboardService.GetCompanyTasks(UserContext.UserId);
+        }
+        else if(UserAccessManager.HasPermission(UserContext.User, "UserDashboard"))
+        {
+            tasks = DashboardService.GetUserTasks(UserContext.UserId);
+        }
+    }
+
+    private void InitializeCampaignData()
     {
         availableCampaigns = DashboardService.GetAvailableCampaigns(UserContext.UserId);
         if (!availableCampaigns.Any())

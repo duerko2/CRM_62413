@@ -75,4 +75,14 @@ public class DashboardService
         funnelView.Stages = stages;
         return funnelView;
     }
+
+    public List<TaskViewModel> GetUserTasks(int userContextUserId)
+    {
+        return _dashboardRepository.GetTasksForUser(userContextUserId);
+    }
+
+    public List<TaskViewModel> GetCompanyTasks(int userContextUserId)
+    {
+        return _dashboardRepository.GetTasksForCompany(userContextUserId);
+    }
 }
