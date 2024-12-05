@@ -33,14 +33,13 @@ public class DashboardService
     {
         FunnelView funnelView = new FunnelView();
 
-        var stages = _pipelineService.GetAllPipelinesForCampaign(campaignId).GroupBy(p => new {p.Id, p.ActiveStage})
+        var stages = _pipelineService.GetAllPipelinesForCampaign(campaignId)
+            .GroupBy(p => p.ActiveStage)
             .Select(g => new FunnelViewStage
             {
-                Id = g.Key.Id,
-                StageName = g.Key.ActiveStage,
+                StageName = g.Key,
                 Count = g.Count(),
             })
-            .OrderBy(p => p.Id)
             .Reverse()
             .ToList();
         foreach (var funnelViewStage in stages)

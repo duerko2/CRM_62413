@@ -42,14 +42,11 @@
 
     private async Task HandleLogin()
     {
-        // For demo purposes, password is hardcoded.
-        if (loginModel.Password == "password")
+
+        if (AuthStateProvider is CustomAuthStateProvider customAuthProvider)
         {
-            if (AuthStateProvider is CustomAuthStateProvider customAuthProvider)
-            {
-                await customAuthProvider.Login(loginModel.Username, loginModel.Password);
-                Navigation.NavigateTo("/");
-            }
+            await customAuthProvider.Login(loginModel.Username, loginModel.Password);
+            Navigation.NavigateTo("/");
         }  
         else
         {

@@ -8,27 +8,35 @@
     @if(UserAccessManager.HasPermission(UserContext.User, "EditCompany"))
     {
         <h3>CompanySettings</h3>
+        <hr/>
         @if (!string.IsNullOrEmpty(_errorMessage))
         {
             <p style="color:red">@_errorMessage</p>
         }
+        <h4>Add user for company</h4>
+        // info icon
+        <i class="bi bi-info-circle bi-lg"></i>
+        <p>Fill in the form below to add a new user to the company.</p>
+        
         <EditForm Model="_newUser" OnValidSubmit="HandleValidSubmit">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
-            <div>
+            <div class="form-group">
                 <label for="email">E-mail:</label>
-                <InputText id="email" @bind-Value="_newUser.Email" />
+                <InputText id="email" @bind-Value="_newUser.Email" class="form-control w-auto"/>
             </div>
-            <div>
+            <div class="form-group">
                 <label for="role">Role:</label>
-                <InputSelect id="role" @bind-Value="_newUser.Role">
+                <InputSelect  id="role" @bind-Value="_newUser.Role" class="form-control w-auto">
                     <option value="Manager">Manager</option>
                     <option value="User">User</option>
                 </InputSelect>
             </div>
 
-            <button type="submit" class="btn btn-primary">Add User</button>
+            <div class="d-flex justify-content-between mt-2">
+                <button type="submit" class="btn btn-primary">Add User</button>
+            </div>
         </EditForm>
     }
     else

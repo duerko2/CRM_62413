@@ -1,0 +1,81 @@
+@page "/register"
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@inject RegistrationService RegistrationService
+
+<AuthorizeView>
+    <NotAuthorized Context="notAuthContext">
+        <EditForm Model="registrationModel" OnValidSubmit="HandleRegistration" class="d-flex justify-content-center align-items-center vh-100 bg-light">
+            <div class="card shadow-lg p-4" style="max-width: 400px; width: 100%;">
+                <h3 class="text-primary text-center mb-4">Login</h3>
+                <DataAnnotationsValidator/>
+                <ValidationSummary class="text-danger mb-3"/>
+
+                <div class="form-group mb-3">
+                    <InputText @bind-Value="registrationModel.Email" placeholder="Email" class="form-control form-control-lg rounded-pill"/>
+                </div>
+                @if(registrationModel.EmailConfirmed)
+                {
+                    <div class="form-group mb-3">
+                        <InputText @bind-Value="registrationModel.Username" placeholder="Username" class="form-control form-control-lg rounded-pill"/>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <InputText @bind-Value="registrationModel.Name" placeholder="Name" class="form-control form-control-lg rounded-pill"/>
+                    </div>
+                    
+                    <div class="form-group mb-4">
+                        <InputText @bind-Value="registrationModel.Password" type="password" placeholder="Password" class="form-control form-control-lg rounded-pill"/>
+                    </div>
+                    <div class="form-group mb-4">
+                        <InputText @bind-Value="registrationModel.ConfirmPassword" type="password" placeholder="Confirm Password" class="form-control form-control-lg rounded-pill"/>
+                    </div>
+                    
+                }
+
+                <button type="submit">Register</button>
+                <p class="text-error">@message</p>
+            </div>
+
+        </EditForm>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    private RegistrationModel registrationModel = new();
+    private String message;
+
+    private async Task HandleRegistration()
+    {
+        if (!registrationModel.EmailConfirmed)
+        {
+            try
+            {
+                registrationModel.EmailConfirmed = RegistrationService.ConfirmEmail(registrationModel);
+            }
+            catch (RegistrationService.RegistrationException ex)
+            {
+                message = ex.Message;
+            } catch (Exception ex)
+            {
+                message = "Something went wrong. Please try again.";
+            }
+        } else {
+            try
+            {
+                RegistrationService.Register(registrationModel);
+                // clear the form
+                registrationModel = new();
+            }
+            catch (RegistrationService.RegistrationException ex)
+            {
+                message = ex.Message;
+            } catch (Exception ex)
+            {
+                message = "Something went wrong. Please try again.";
+            }
+        }
+    }
+
+}
