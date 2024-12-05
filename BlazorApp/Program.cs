@@ -23,11 +23,17 @@ internal class Program
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
         
+        IConfigurationRoot config = new ConfigurationBuilder()
+            .AddUserSecrets<Program>()
+            .Build();
+
+        var connectionString = config.GetConnectionString("Default Connection");
+        
         builder.Services.AddDbContextFactory<CrmDbContext>(options =>
-            options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("Default Connection")));
+            options.UseLazyLoadingProxies().UseSqlServer(connectionString));
 
         builder.Services.AddDbContext<CrmDbContext>(options =>
-            options.UseLazyLoadingProxies().UseSqlServer(builder.Configuration.GetConnectionString("Default Connection")));
+            options.UseLazyLoadingProxies().UseSqlServer(connectionString));
 
 
         builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
