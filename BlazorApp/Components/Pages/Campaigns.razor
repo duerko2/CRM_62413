@@ -14,14 +14,14 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th @onclick="@(() => SortCampaigns(nameof(CampaignListRow.Id)))">
-                        Campaign ID @SortIndicator(nameof(CampaignListRow.Id))
-                    </th>
                     <th @onclick="@(() => SortCampaigns(nameof(CampaignListRow.Name)))">
                         Campaign Name @SortIndicator(nameof(CampaignListRow.Name))
                     </th>
                     <th @onclick="@(() => SortCampaigns(nameof(CampaignListRow.NumberOfStages)))">
                         Number of Stages @SortIndicator(nameof(CampaignListRow.NumberOfStages))
+                    </th>
+                    <th @onclick="@(() => SortCampaigns(nameof(CampaignListRow.NumberOfPipelines)))">
+                        Number of Pipelines @SortIndicator(nameof(CampaignListRow.NumberOfPipelines))
                     </th>
                     <th>Actions</th>
                 </tr>
@@ -30,9 +30,9 @@
                 @foreach (var campaign in campaigns)
                 {
                     <tr>
-                        <td>@campaign.Id</td>
                         <td>@campaign.Name</td>
                         <td>@campaign.NumberOfStages</td>
+                        <td>@campaign.NumberOfPipelines</td>
                         <td>
                             <button class="btn btn-primary btn-sm" @onclick="() => NavigateToCampaignDetail(campaign.Id)">
                                 View Details
@@ -113,6 +113,7 @@
             nameof(CampaignListRow.Id) => campaign.Id,
             nameof(CampaignListRow.Name) => campaign.Name,
             nameof(CampaignListRow.NumberOfStages) => campaign.NumberOfStages,
+            nameof(CampaignListRow.NumberOfPipelines) => campaign.NumberOfPipelines,
             _ => campaign.Id
         };
     }

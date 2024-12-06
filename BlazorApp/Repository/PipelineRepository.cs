@@ -24,19 +24,40 @@ namespace BlazorApp.Repository
             return PipelineMapper.MapToModel(pipelineEntity);
         }
 
-        public List<PipelineListRow> GetAllPipelines()
+        public List<PipelineListRow> GetAllCompanyPipelines(int companyId)
         {
             using CrmDbContext db = _contextFactory.CreateDbContext();
             return db.Pipelines
                 .Include(p => p.Contact)
                 .Include(p => p.Campaign)
+                .Where(p => p.Contact.User.CompanyId == companyId)
                 .Select(p => new PipelineListRow
                 {
                     Id = p.Id,
                     ContactName = p.Contact.Name,
                     CampaignName = p.Campaign.Name,
                     Status = p.Status,
-                    ActiveStage = p.ActiveStage
+                    ActiveStage = p.ActiveStage,
+                    RepName = p.Contact.User.Name
+                })
+                .ToList();
+        }
+
+        public List<PipelineListRow> GetAllUserPipelines(int userId)
+        {
+            using CrmDbContext db = _contextFactory.CreateDbContext();
+            return db.Pipelines
+                .Include(p => p.Contact)
+                .Include(p => p.Campaign)
+                .Where(p => p.Contact.UserId == userId)
+                .Select(p => new PipelineListRow
+                {
+                    Id = p.Id,
+                    ContactName = p.Contact.Name,
+                    CampaignName = p.Campaign.Name,
+                    Status = p.Status,
+                    ActiveStage = p.ActiveStage,
+                    RepName = p.Contact.User.Name
                 })
                 .ToList();
         }

@@ -7,5 +7,6 @@
         public string CampaignName { get; set; }
         public string ActiveStage { get; set; }
         public string Status { get; set; }
+        public object RepName { get; set; }
     }
 }

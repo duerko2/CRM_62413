@@ -290,9 +290,13 @@ namespace BlazorApp.Services
             return _pipelineRepository.GetPipeline(id);
         }
 
-        public List<PipelineListRow> GetAllPipelines()
+        public List<PipelineListRow> GetUserPipelines(int userId)
         {
-            return _pipelineRepository.GetAllPipelines();
+            return _pipelineRepository.GetAllUserPipelines(userId);
+        }
+        public List<PipelineListRow> GetCompanyPipelines(int companyId)
+        {
+            return _pipelineRepository.GetAllCompanyPipelines(companyId);
         }
 
         public void AddPipeline(PipelineModel pipeline)

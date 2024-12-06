@@ -18,7 +18,12 @@ public class CompanySettingsService
         {
             throw new Exception("User already exists");
         }
-        newUser.CompanyId = _companySettingsRepository.GetCompanyIdForUserId(userContextUserId);
+        newUser.CompanyId = GetCompanyForUser(userContextUserId);
         _companySettingsRepository.AddUser(newUser);
+    }
+
+    public int GetCompanyForUser(int userId)
+    {
+        return _companySettingsRepository.GetCompanyIdForUserId(userId);
     }
 }

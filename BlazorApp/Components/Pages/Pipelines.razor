@@ -1,8 +1,9 @@
 ﻿@page "/pipelines"
-@using BlazorApp.Models
-@using BlazorApp.Services
+@using RolesAndPermissions
 @inject PipelineService PipelineService
 @inject NavigationManager NavigationManager
+@inject CompanySettingsService CompanySettingsService
+@inject IUserAccessManager UserAccessManager;
 
 <PageTitle>Pipelines</PageTitle>
 
@@ -41,9 +42,7 @@
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th @onclick="@(() => SortPipelines(nameof(PipelineListRow.Id)))">
-                        Pipeline ID @SortIndicator(nameof(PipelineListRow.Id))
-                    </th>
+
                     <th @onclick="@(() => SortPipelines(nameof(PipelineListRow.CampaignName)))">
                         Campaign @SortIndicator(nameof(PipelineListRow.CampaignName))
                     </th>
@@ -56,6 +55,12 @@
                     <th @onclick="@(() => SortPipelines(nameof(PipelineListRow.Status)))">
                         Status @SortIndicator(nameof(PipelineListRow.Status))
                     </th>
+                    @if (UserAccessManager.HasPermission(UserContext.User, "ViewAllPipelines"))
+                    {
+                        <th @onclick="@(() => SortPipelines(nameof(PipelineListRow.RepName)))">
+                            Sales Rep @SortIndicator(nameof(PipelineListRow.RepName))
+                        </th>
+                    }
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -63,11 +68,14 @@
                 @foreach (var pipeline in displayedPipelines)
                 {
                     <tr>
-                        <td>@pipeline.Id</td>
                         <td>@pipeline.CampaignName</td>
                         <td>@pipeline.ContactName</td>
                         <td>@pipeline.ActiveStage</td>
                         <td>@pipeline.Status</td>
+                        @if (UserAccessManager.HasPermission(UserContext.User, "ViewAllPipelines"))
+                        {
+                            <td>@pipeline.RepName</td>
+                        }
                         <td>
                             <button class="btn btn-primary btn-sm" @onclick="() => NavigateToPipelineDetail(pipeline.Id)">
                                 View Details
@@ -109,6 +117,8 @@
 </style>
 
 @code {
+    [CascadingParameter] private UserContext UserContext { get; set; }
+
     private List<PipelineListRow> pipelines;
     private List<PipelineListRow> displayedPipelines;
     private string currentFilter = "All"; // Options: "All", "Active", "Finished"
@@ -123,8 +133,28 @@
 
     protected override void OnInitialized()
     {
-        pipelines = PipelineService.GetAllPipelines();
+        if(UserAccessManager.HasPermission(UserContext.User, "ViewAllPipelines"))
+        {
+            var companyId = CompanySettingsService.GetCompanyForUser(UserContext.UserId);
+            pipelines = LoadCompanyPipelines(companyId);
+        } else if(UserAccessManager.HasPermission(UserContext.User, "ViewOwnPipelines"))
+        {
+            pipelines = LoadOwnPipelines(UserContext.UserId);
+        } else
+        {
+            pipelines = new List<PipelineListRow>();
+        }
         displayedPipelines = new List<PipelineListRow>(pipelines); // Show all by default
+    }
+
+    private List<PipelineListRow> LoadOwnPipelines(int userId)
+    {
+        return PipelineService.GetUserPipelines(userId);
+    }
+
+    private List<PipelineListRow> LoadCompanyPipelines(int companyId)
+    {
+        return PipelineService.GetCompanyPipelines(companyId);
     }
 
     private void NavigateToPipelineDetail(int pipelineId)

@@ -35,7 +35,8 @@ namespace BlazorApp.Repository
                 {
                     Id = c.Id,
                     Name = c.Name,
-                    NumberOfStages = c.Stages.Count
+                    NumberOfStages = c.Stages.Count,
+                    NumberOfPipelines = c.Pipelines.Count
                 })
                 .ToList();
         }
