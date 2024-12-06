@@ -7,6 +7,8 @@ using BlazorApp.Repository;
 using BlazorApp.Services;
 using Contact = BlazorApp.Models.Contact;
 
+namespace BlazorApp.TestsIES.Services;
+
 [TestFixture]  // Marks the class as a test fixture in NUnit
 public class ContactServiceTests
 {

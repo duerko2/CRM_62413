@@ -21,21 +21,12 @@ namespace BlazorApp.Services
             _activityLogRepository = activityLogRepository;
         }
         
-        /// <summary>
-        /// Retrieves the list of contacts.
-        /// </summary>
-        /// <returns>List of contacts.</returns>
         public List<ContactListRow> GetContacts(int userId)
         {
             var contacts = _contactRepository.GetContactsForUser(userId);
             return contacts;
         }
         
-        /// <summary>
-        /// Retrieves a contact by its ID.
-        /// </summary>
-        /// <param name="id">The ID of the contact.</param>
-        /// <returns>The contact with the specified ID, or null if not found.</returns>
         public Contact GetContactById(int id)
         {
             var contact = _contactRepository.GetContact(id);
@@ -43,10 +34,6 @@ namespace BlazorApp.Services
             return contact;
         }
 
-        /// <summary>
-        /// Idempotent method to save a contact and its related Persons.
-        /// </summary>
-        /// <param name="contact"></param>
         public void SaveContact(Contact contact, int userId)
         {
             contact.UserId = contact.UserId == default ? userId : contact.UserId;
