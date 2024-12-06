@@ -1,5 +1,4 @@
-
-
+using System.Security.Cryptography;
 using BlazorApp.Models;
 using BlazorApp.Repository;
 using BlazorApp.Services;
@@ -57,10 +56,33 @@ public class RegistrationServiceTest {
         registrationModel.Name = "Test User";
         
         _registrationService.Register(registrationModel);
+
+        var salt = registrationModel.Salt;
         
-        // Assert the user is registered with salted and hashed password // at least different than the original password
-        _registrationRepositoryMock.Verify(repo => repo.AddUser(It.Is<RegistrationModel>(u => u.Email == registrationModel.Email && u.Name == registrationModel.Name && registrationModel.Password != "password")), Times.Once);
+        // Assert the user is registered with salted and hashed password
+        _registrationRepositoryMock.Verify(repo => 
+            repo.AddUser(
+                It.Is<RegistrationModel>(u => 
+                    u.Email == registrationModel.Email && 
+                    u.Name == registrationModel.Name && 
+                    registrationModel.Password != "password")
+                ), Times.Once);
+        
+        
+        
+        // Test that the saved password can be verified with the correct password
+        var savedPassword = registrationModel.Password;
+        var correctPassword = "password";
+        
+        var saltedPassword = correctPassword + salt;
+        
+        // Hash the salted password            
+        var sha256 = SHA256.Create();
+        var passwordBytes = System.Text.Encoding.UTF8.GetBytes(saltedPassword);
+        var hashedPassword = sha256.ComputeHash(passwordBytes);
+        var hashedPasswordString = Convert.ToBase64String(hashedPassword);
+            
+        // Assert the saved salted and hashed password can later be verified with the correct password from a login form.
+        Assert.AreEqual(savedPassword, hashedPasswordString);
     }
-
-
 }
