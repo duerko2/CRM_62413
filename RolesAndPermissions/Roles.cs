@@ -4,7 +4,7 @@ internal sealed class Roles
 {
     private readonly Dictionary<string, List<string>> _rolePermissions = new()
     {
-        { "Manager", ["ViewAllContacts", "EditCompany", "ManagerDashboard", "ViewAllPipelines"] },
+        { "Manager", ["ViewAllContacts", "EditCompany", "ManagerDashboard", "ViewAllPipelines", "CanCreateCampaign"] },
         { "User", ["ViewOwnContacts", "UserDashboard", "ViewOwnPipelines"] },
     };
     
