@@ -9,27 +9,26 @@ using Contact = BlazorApp.Models.Contact;
 
 namespace BlazorApp.TestsIES.Services;
 
-[TestFixture]  // Marks the class as a test fixture in NUnit
+[TestFixture]  
 public class ContactServiceTests
 {
     private Mock<IContactRepository> _contactRepositoryMock;
     private Mock<IActivityLogRepository> _activityLogRepositoryMock;
     private ContactService _service;
 
-    [SetUp]  // SetUp runs before each test method
+    [SetUp]  
     public void SetUp()
     {
         _contactRepositoryMock = new Mock<IContactRepository>();
         _activityLogRepositoryMock = new Mock<IActivityLogRepository>();
 
-        // Instantiate the service with mocked dependencies
         _service = new ContactService(
             _contactRepositoryMock.Object,
             _activityLogRepositoryMock.Object
         );
     }
 
-    [Test]  // Marks this method as a test method
+    [Test]  
     public void GetContacts_ShouldReturnContactsForUser()
     {
         // Arrange
