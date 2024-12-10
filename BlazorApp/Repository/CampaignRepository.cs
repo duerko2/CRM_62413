@@ -3,21 +3,23 @@ using BlazorApp.Persistence;
 using BlazorApp.Persistence.Entities;
 using BlazorApp.ModelMapping;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 
 namespace BlazorApp.Repository
 {
     public class CampaignRepository : ICampaignRepository
     {
-        private readonly CrmDbContext _dbContext;
+        private readonly IDbContextFactory<CrmDbContext> _contextFactory;
 
-        public CampaignRepository(CrmDbContext dbContext)
+        public CampaignRepository(IDbContextFactory<CrmDbContext> contextFactory)
         {
-            _dbContext = dbContext;
+            _contextFactory = contextFactory;
         }
 
         public CampaignModel GetCampaign(int id)
         {
-            var campaignEntity = _dbContext.Campaigns
+            using CrmDbContext db = _contextFactory.CreateDbContext();
+            var campaignEntity = db.Campaigns
                 .Include(c => c.Stages)
                 .FirstOrDefault(c => c.Id == id);
 
@@ -29,7 +31,8 @@ namespace BlazorApp.Repository
 
         public List<CampaignListRow> GetAllCampaigns()
         {
-            return _dbContext.Campaigns
+            using CrmDbContext db = _contextFactory.CreateDbContext();
+            return db.Campaigns
                 .Include(c => c.Stages)
                 .Select(c => new CampaignListRow
                 {
@@ -43,26 +46,30 @@ namespace BlazorApp.Repository
 
         public void AddCampaign(CampaignModel campaign)
         {
+            using CrmDbContext db = _contextFactory.CreateDbContext();
+
             var entity = CampaignMapper.MapToEntity(campaign);
-            _dbContext.Campaigns.Add(entity);
-            _dbContext.SaveChanges();
+            db.Campaigns.Add(entity);
+            db.SaveChanges();
             campaign.Id = entity.Id; // Update the model with the generated ID
         }
 
         public void UpdateCampaign(CampaignModel campaign)
         {
+            using CrmDbContext db = _contextFactory.CreateDbContext();
             var entity = CampaignMapper.MapToEntity(campaign);
-            _dbContext.Campaigns.Update(entity);
-            _dbContext.SaveChanges();
+            db.Campaigns.Update(entity);
+            db.SaveChanges();
         }
 
         public void DeleteCampaign(int id)
         {
-            var campaign = _dbContext.Campaigns.Find(id);
+            using CrmDbContext db = _contextFactory.CreateDbContext();
+            var campaign = db.Campaigns.Find(id);
             if (campaign != null)
             {
-                _dbContext.Campaigns.Remove(campaign);
-                _dbContext.SaveChanges();
+                db.Campaigns.Remove(campaign);
+                db.SaveChanges();
             }
         }
     }
