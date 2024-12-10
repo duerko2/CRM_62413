@@ -17,8 +17,7 @@ namespace BlazorApp.TestsIES.Services
         [SetUp]
         public void SetUp()
         {
-            // Initialize the mock repository before each test
-            _campaignRepositoryMock = new Mock<ICampaignRepository>();
+             _campaignRepositoryMock = new Mock<ICampaignRepository>();
             _campaignService = new CampaignService(_campaignRepositoryMock.Object);
         }
 

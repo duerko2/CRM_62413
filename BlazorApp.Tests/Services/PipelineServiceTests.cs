@@ -31,8 +31,7 @@ namespace BlazorApp.TestsIES.Services
             _contactService = new ContactService(_contactRepositoryMock.Object, _activityLogRepositoryMock.Object);
             _campaignService = new CampaignService(_campaignRepositoryMock.Object);
 
-            // Instantiate the PipelineService with real service instances and mocked repositories
-            _pipelineService = new PipelineService(
+             _pipelineService = new PipelineService(
                 _pipelineRepositoryMock.Object,
                 _contactRepositoryMock.Object,
                 _campaignRepositoryMock.Object,

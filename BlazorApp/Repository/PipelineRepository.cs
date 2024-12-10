@@ -68,7 +68,7 @@ namespace BlazorApp.Repository
             var entity = PipelineMapper.MapToEntity(pipeline);
             db.Pipelines.Add(entity);
             db.SaveChanges();
-            pipeline.Id = entity.Id; // Update the model with the generated ID
+            pipeline.Id = entity.Id;  
         }
 
         public void UpdatePipeline(PipelineModel pipeline)
@@ -113,7 +113,7 @@ namespace BlazorApp.Repository
             var entity = TaskMapper.MapToEntity(task);
             db.PipelineTasks.Add(entity);
             db.SaveChanges();
-            task.Id = entity.Id; // Update task ID
+            task.Id = entity.Id;  
         }
 
         public void UpdateTask(TaskModel task)

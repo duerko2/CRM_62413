@@ -19,7 +19,7 @@ namespace BlazorApp.Services
 
             if (errors.Any())
             {
-                return errors; // Return errors to the caller
+                return errors;  
             }
 
             _campaignRepository.AddCampaign(campaign);
@@ -53,7 +53,7 @@ namespace BlazorApp.Services
                 // Proceed only if no errors so far
                 if (!errors.Any())
                 {
-                    // Safe to access stage.Name.Length now
+                    // Can access stage.Name.Length now
                     if (campaign.Stages.Any(stage => !string.IsNullOrEmpty(stage.Name) && stage.Name.Length > 20))
                     {
                         errors.Add("Stage names must be 20 characters or fewer.");

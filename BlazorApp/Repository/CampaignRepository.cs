@@ -51,7 +51,7 @@ namespace BlazorApp.Repository
             var entity = CampaignMapper.MapToEntity(campaign);
             db.Campaigns.Add(entity);
             db.SaveChanges();
-            campaign.Id = entity.Id; // Update the model with the generated ID
+            campaign.Id = entity.Id; 
         }
 
         public void UpdateCampaign(CampaignModel campaign)
